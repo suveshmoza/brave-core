@@ -458,13 +458,13 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
             connectivityManager.registerNetworkCallback(networkRequest, mNetworkCallback);
 
             if ((SharedPreferencesManager.getInstance().readInt(
-                     BravePreferenceKeys.BRAVE_APP_OPEN_COUNT)
-                            == 1
-                    && !PackageUtils.isFirstInstall(this))
-                || (SharedPreferencesManager.getInstance().readInt(
-                            BravePreferenceKeys.BRAVE_APP_OPEN_COUNT)
-                                == 7
-                        && PackageUtils.isFirstInstall(this))) {
+                         BravePreferenceKeys.BRAVE_APP_OPEN_COUNT)
+                                == 1
+                        && !PackageUtils.isFirstInstall(this))
+                    || (SharedPreferencesManager.getInstance().readInt(
+                                BravePreferenceKeys.BRAVE_APP_OPEN_COUNT)
+                                    == 7
+                            && PackageUtils.isFirstInstall(this))) {
                 showVpnCalloutDialog();
             }
         }
@@ -513,7 +513,8 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
                 try {
                     vpnManager.startProvisionedVpnProfile();
                 } catch (SecurityException securityException) {
-                    Ikev2VpnProfile ikev2VpnProfile = BraveVpnUtils.getVpnProfile(BraveActivity.this);
+                    Ikev2VpnProfile ikev2VpnProfile =
+                            BraveVpnUtils.getVpnProfile(BraveActivity.this);
                     Intent intent = vpnManager.provisionVpnProfile(ikev2VpnProfile);
                     startActivityForResult(intent, BRAVE_VPN_PROFILE_REQUEST_CODE);
                 }
@@ -840,7 +841,8 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
             if (! TextUtils.isEmpty(open_url)) {
                 openNewOrSelectExistingTab(open_url);
             }
-        } else if (resultCode == RESULT_OK && requestCode == BRAVE_VPN_PROFILE_REQUEST_CODE && BraveVpnUtils.isBraveVpnFeatureEnable()) {
+        } else if (resultCode == RESULT_OK && requestCode == BRAVE_VPN_PROFILE_REQUEST_CODE
+                && BraveVpnUtils.isBraveVpnFeatureEnable()) {
             vpnManager.startProvisionedVpnProfile();
         }
         super.onActivityResult(requestCode, resultCode, data);
