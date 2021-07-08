@@ -24,8 +24,8 @@ const run = (cmd, args = []) => {
 }
 
 // this is a huge hack because the npm config doesn't get passed through from brave-browser .npmrc/package.json
-var packageConfig = function(key, sourceDir = rootDir){
-  let packages = { config: {}}
+var packageConfig = function(key, sourceDir = rootDir) {
+  let packages = { config: {} }
   const configAbsolutePath = path.join(sourceDir, 'package.json')
   if (fs.existsSync(configAbsolutePath)) {
     packages = require(path.relative(__dirname, configAbsolutePath))
@@ -90,8 +90,8 @@ const Config = function () {
   this.targetArch = getNPMConfig(['target_arch']) || 'x64'
   this.targetOS = getNPMConfig(['target_os'])
   this.gypTargetArch = 'x64'
-  this.targetAndroidBase ='classic'
-  this.braveGoogleApiKey = getNPMConfig(['brave_google_api_key']) || 'AIzaSyAQfxPJiounkhOjODEO5ZieffeBv6yft2Q'
+  this.targetAndroidBase = 'classic'
+  this.braveGoogleApiKey = getNPMConfig(['brave_google_api_key']) || 'AIzaSyAREPLACEWITHYOUROWNGOOGLEAPIKEY2Q'
   this.googleApiEndpoint = getNPMConfig(['brave_google_api_endpoint']) || 'https://www.googleapis.com/geolocation/v1/geolocate?key='
   this.googleDefaultClientId = getNPMConfig(['google_default_client_id']) || ''
   this.googleDefaultClientSecret = getNPMConfig(['google_default_client_secret']) || ''
@@ -133,7 +133,7 @@ const Config = function () {
   this.git_cache_path = getNPMConfig(['git_cache_path'])
   this.sccache = getNPMConfig(['sccache'])
   this.gomaServerHost = getNPMConfig(['goma_server_host'])
-  this.gomaJValue = (os.cpus().length + 1) * 3
+  this.gomaJValue = Math.min(100, (os.cpus().length + 1) * 3)
   this.braveStatsApiKey = getNPMConfig(['brave_stats_api_key']) || ''
   this.braveStatsUpdaterUrl = getNPMConfig(['brave_stats_updater_url']) || ''
   this.ignore_compile_failure = false
@@ -168,11 +168,11 @@ Config.prototype.isDebug = function () {
 
 Config.prototype.enableCDMHostVerification = function () {
   const enable = this.buildConfig === 'Release' &&
-                 process.platform !== 'linux' &&
-                 this.sign_widevine_cert !== "" &&
-                 this.sign_widevine_key !== "" &&
-                 this.sign_widevine_passwd !== "" &&
-                 fs.existsSync(this.signature_generator)
+    process.platform !== 'linux' &&
+    this.sign_widevine_cert !== "" &&
+    this.sign_widevine_key !== "" &&
+    this.sign_widevine_passwd !== "" &&
+    fs.existsSync(this.signature_generator)
   if (enable) {
     console.log('Widevine cdm host verification is enabled')
   } else {
@@ -263,11 +263,6 @@ Config.prototype.buildArgs = function () {
     ...this.extraGnArgs,
   }
 
-  if (process.platform === 'darwin') {
-    args.use_system_xcode = false
-    args.mac_sdk_official_version = "11.3"
-  }
-
   if (this.shouldSign()) {
     if (process.platform === 'darwin') {
       args.mac_signing_identifier = this.mac_signing_identifier
@@ -297,9 +292,16 @@ Config.prototype.buildArgs = function () {
     args.last_chrome_installer = this.last_chrome_installer
   }
 
+  if (process.platform === 'darwin') {
+    args.allow_runtime_configurable_key_storage = true
+    if (this.use_goma && this.gomaServerHost) {
+      args.use_system_xcode = false
+    }
+  }
+
   if (this.isDebug() &&
-      this.targetOS !== 'ios' &&
-      this.targetOS !== 'android') {
+    this.targetOS !== 'ios' &&
+    this.targetOS !== 'android') {
     if (process.platform === 'darwin') {
       args.enable_stripping = false
     }
@@ -319,8 +321,8 @@ Config.prototype.buildArgs = function () {
   }
 
   if (this.targetArch === 'x64' &&
-      process.platform === 'linux' &&
-      this.targetOS !== 'android') {
+    process.platform === 'linux' &&
+    this.targetOS !== 'android') {
     // Include vaapi support
     args.use_vaapi = true
   }
@@ -347,7 +349,7 @@ Config.prototype.buildArgs = function () {
 
     args.target_android_base = this.targetAndroidBase
     args.target_android_output_format =
-        this.targetAndroidOutputFormat || (this.buildConfig === 'Release' ? 'aab' : 'apk')
+      this.targetAndroidOutputFormat || (this.buildConfig === 'Release' ? 'aab' : 'apk')
     args.android_override_version_name = this.androidOverrideVersionName
 
     args.brave_android_developer_options_code = this.braveAndroidDeveloperOptionsCode
@@ -410,8 +412,6 @@ Config.prototype.buildArgs = function () {
     args.ios_enable_credential_provider_extension = false
     args.ios_enable_widget_kit_extension = false
 
-    args.use_system_xcode = true
-
     delete args.safebrowsing_api_endpoint
     delete args.updater_prod_endpoint
     delete args.updater_dev_endpoint
@@ -458,8 +458,8 @@ Config.prototype.buildArgs = function () {
 
 Config.prototype.shouldSign = function () {
   if (this.skip_signing ||
-      this.buildConfig !== 'Release' ||
-      this.targetOS === 'ios') {
+    this.buildConfig !== 'Release' ||
+    this.targetOS === 'ios') {
     return false
   }
 
@@ -473,7 +473,7 @@ Config.prototype.shouldSign = function () {
 
   if (process.platform === 'win32') {
     return process.env.CERT !== undefined &&
-           process.env.SIGNTOOL_ARGS !== undefined
+      process.env.SIGNTOOL_ARGS !== undefined
   }
 
   return false
@@ -725,7 +725,7 @@ Config.prototype.update = function (options) {
   if (options.xcode_gen) {
     assert(process.platform === 'darwin' || options.target_os === 'ios')
     if (options.xcode_gen === 'ios') {
-      this.xcode_gen_target = '//brave/vendor/brave-ios:*'
+      this.xcode_gen_target = '//brave/ios:*'
     } else {
       this.xcode_gen_target = options.xcode_gen
     }

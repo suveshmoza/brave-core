@@ -101,8 +101,8 @@ IPFSTabHelper::IPFSTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       IpfsImportController(web_contents) {
   pref_service_ = user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
-  auto* storage_partition = content::BrowserContext::GetDefaultStoragePartition(
-      web_contents->GetBrowserContext());
+  auto* storage_partition =
+      web_contents->GetBrowserContext()->GetDefaultStoragePartition();
 
   resolver_.reset(new IPFSHostResolver(storage_partition->GetNetworkContext(),
                                        kDnsDomainPrefix));
@@ -232,7 +232,8 @@ void IPFSTabHelper::UpdateDnsLinkButtonState() {
 
 bool IPFSTabHelper::CanResolveURL(const GURL& url) const {
   return url.SchemeIsHTTPOrHTTPS() &&
-         !IsAPIGateway(url.GetOrigin(), chrome::GetChannel());
+         !IsAPIGateway(url.GetOrigin(), chrome::GetChannel()) &&
+         !IsDefaultGatewayURL(url, pref_service_);
 }
 
 void IPFSTabHelper::MaybeShowDNSLinkButton(

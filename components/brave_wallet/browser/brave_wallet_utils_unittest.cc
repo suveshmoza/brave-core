@@ -12,6 +12,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,6 +21,11 @@ namespace brave_wallet {
 TEST(BraveWalletUtilsUnitTest, ToHex) {
   ASSERT_EQ(ToHex(""), "0x0");
   ASSERT_EQ(ToHex("hello world"), "0x68656c6c6f20776f726c64");
+
+  ASSERT_EQ(ToHex(std::vector<uint8_t>()), "0x0");
+  const std::string str1("hello world");
+  ASSERT_EQ(ToHex(std::vector<uint8_t>(str1.begin(), str1.end())),
+            "0x68656c6c6f20776f726c64");
 }
 
 TEST(BraveWalletUtilsUnitTest, KeccakHash) {
@@ -727,6 +733,25 @@ TEST(BraveWalletUtilsUnitTest, SecureZeroData) {
   for (const auto& byte : c) {
     EXPECT_EQ(byte, 0);
   }
+}
+
+TEST(BraveWalletUtilsUnitTest, TransactionReceiptAndValue) {
+  TransactionReceipt tx_receipt;
+  tx_receipt.transaction_hash =
+      "0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238";
+  tx_receipt.transaction_index = 0x1;
+  tx_receipt.block_number = 0xb;
+  tx_receipt.block_hash =
+      "0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b";
+  tx_receipt.cumulative_gas_used = 0x33bc;
+  tx_receipt.gas_used = 0x4dc;
+  tx_receipt.contract_address = "0xb60e8dd61c5d32be8058bb8eb970870f07233155";
+  tx_receipt.status = true;
+
+  base::Value tx_receipt_value = TransactionReceiptToValue(tx_receipt);
+  auto tx_receipt_from_value = ValueToTransactionReceipt(tx_receipt_value);
+  ASSERT_NE(tx_receipt_from_value, base::nullopt);
+  EXPECT_EQ(tx_receipt, *tx_receipt_from_value);
 }
 
 }  // namespace brave_wallet

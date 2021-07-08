@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 import {Router} from '../router.js';
 import {BraveIPFSBrowserProxyImpl} from './brave_ipfs_browser_proxy.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
 (function() {
   'use strict';
@@ -47,11 +48,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
-    importKeysError_: {
+    actionKeysError_: {
       type: Boolean,
       value: false,
     },
     showAddp2pKeyDialog_: {
+      type: Boolean,
+      value: false,
+    },
+    showRotatep2pKeyDialog_: {
       type: Boolean,
       value: false,
     }
@@ -68,10 +73,18 @@ Polymer({
     this.addWebUIListener('brave-ipfs-keys-loaded', (success) => {
       this.updateKeys()
     })
+    this.addWebUIListener('brave-ipfs-key-exported', (key, success) => {
+      this.actionKeysError_ = !success
+      if (this.actionKeysError_ ) {
+        const errorLabel = (this.$$('#key-error'));
+        errorLabel.textContent = this.i18n('ipfsExportKeysError', key)
+        return;
+      }
+    })
     this.addWebUIListener('brave-ipfs-key-imported', (key, value, success) => {
-      this.importKeysError_ = !success
-      if (this.importKeysError_ ) {
-        const errorLabel = (this.$$('#key-import-error'));
+      this.actionKeysError_ = !success
+      if (this.actionKeysError_ ) {
+        const errorLabel = (this.$$('#key-error'));
         errorLabel.textContent = this.i18n('ipfsImporKeysError', key)
         return;
       }
@@ -92,7 +105,7 @@ Polymer({
   toggleUILayout: function(launched) {
     this.launchNodeButtonEnabled_ = !launched;
     this.localNodeLaunched = launched
-    this.importKeysError_ = false
+    this.actionKeysError_ = false
     if (launched) {
       this.localNodeLaunchError_ = false
     } else {
@@ -125,8 +138,18 @@ Polymer({
     return name == 'self';
   },
 
+  getIconForKey: function(name) {
+    return name == 'self' ? 'icon-button-self' : 'icon-button'
+  },
+  
+
   onAddKeyTap_: function(item) {
     this.showAddp2pKeyDialog_ = true
+  },
+
+  onRotateKeyDialogClosed_: function() {
+    this.showRotatep2pKeyDialog_ = false
+    this.updateKeys();
   },
 
   updateKeys: function() {
@@ -144,19 +167,40 @@ Polymer({
     this.updateKeys();
   },
 
+  onKeyActionTapped_: function(event) {
+    let name = event.model.item.name
+    if (name != 'self')
+      return;
+    this.showRotatep2pKeyDialog_ = true
+    return;
+  },
+
   onKeyDeleteTapped_: function(event) {
+    this.$$('cr-action-menu').close();
     let name_to_remove = event.model.item.name
     var message = this.i18n('ipfsDeleteKeyConfirmation', name_to_remove)
     if (!window.confirm(message))
       return
-    this.browserProxy_.removeIpnsKey(name_to_remove).then(removed_name => {
+    this.browserProxy_.removeIpnsKey(name).then(removed_name => {
       if (!removed_name)
         return;
-      if (removed_name === name_to_remove) {
+      if (removed_name === name) {
         this.updateKeys()
         return;
       }
     });
+  },
+  
+  onExportTap_: function(event) {
+    this.$$('cr-action-menu').close();
+    let name_to_export = event.model.item.name
+    this.browserProxy_.exportIPNSKey(name_to_export);
+  },
+  
+  onKeyMenuTapped_: function(event) {
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('#key-menu').get());
+    actionMenu.showAt(assert(this.$$('#key-dots')));
   }
 });
 })();

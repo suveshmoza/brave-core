@@ -242,7 +242,7 @@ void BindBraveSearchFallbackHost(
   content::BrowserContext* context = render_process_host->GetBrowserContext();
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<brave_search::BraveSearchFallbackHost>(
-          content::BrowserContext::GetDefaultStoragePartition(context)
+          context->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess()),
       std::move(receiver));
 }
@@ -306,8 +306,7 @@ void BraveContentBrowserClient::BrowserURLHandlerCreated(
 void BraveContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  BraveRendererUpdaterFactory::GetForProfile(profile)
-      ->InitializeRenderer(host);
+  BraveRendererUpdaterFactory::GetForProfile(profile)->InitializeRenderer(host);
 
   ChromeContentBrowserClient::RenderProcessWillLaunch(host);
 }
@@ -365,7 +364,7 @@ bool BraveContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
 #if BUILDFLAG(ENABLE_BRAVE_WEBTORRENT)
   if (webtorrent::IsMagnetProtocol(url)) {
@@ -454,18 +453,28 @@ BraveContentBrowserClient::CreateURLLoaderThrottles(
       request, browser_context, wc_getter, navigation_ui_data,
       frame_tree_node_id);
 #if BUILDFLAG(ENABLE_SPEEDREADER)
+  using DistillState = speedreader::SpeedreaderTabHelper::DistillState;
   content::WebContents* contents = wc_getter.Run();
   if (!contents) {
     return result;
   }
   auto* tab_helper =
       speedreader::SpeedreaderTabHelper::FromWebContents(contents);
-  if (tab_helper && tab_helper->IsActiveForMainFrame() &&
-      request.resource_type ==
-          static_cast<int>(blink::mojom::ResourceType::kMainFrame)) {
-    result.push_back(std::make_unique<speedreader::SpeedReaderThrottle>(
-        g_brave_browser_process->speedreader_rewriter_service(),
-        base::ThreadTaskRunnerHandle::Get()));
+  if (tab_helper) {
+    const auto state = tab_helper->PageDistillState();
+    if (speedreader::SpeedreaderTabHelper::PageStateIsDistilled(state) &&
+        request.resource_type ==
+            static_cast<int>(blink::mojom::ResourceType::kMainFrame)) {
+      std::unique_ptr<speedreader::SpeedReaderThrottle> throttle =
+          speedreader::SpeedReaderThrottle::MaybeCreateThrottleFor(
+              g_brave_browser_process->speedreader_rewriter_service(),
+              HostContentSettingsMapFactory::GetForProfile(
+                  Profile::FromBrowserContext(browser_context)),
+              request.url, state == DistillState::kSpeedreaderMode,
+              base::ThreadTaskRunnerHandle::Get());
+      if (throttle)
+        result.push_back(std::move(throttle));
+    }
   }
 #endif  // ENABLE_SPEEDREADER
   return result;
@@ -477,7 +486,7 @@ bool BraveContentBrowserClient::WillCreateURLLoaderFactory(
     int render_process_id,
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
-    base::Optional<int64_t> navigation_id,
+    absl::optional<int64_t> navigation_id,
     ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -510,7 +519,7 @@ void BraveContentBrowserClient::CreateWebSocket(
     content::ContentBrowserClient::WebSocketFactory factory,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const base::Optional<std::string>& user_agent,
+    const absl::optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
   auto* proxy = BraveProxyingWebSocket::ProxyWebSocket(
@@ -691,12 +700,14 @@ bool BraveContentBrowserClient::OverrideWebPreferencesAfterNavigation(
           web_contents, prefs);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  const GURL url = web_contents->GetLastCommittedURL();
+  const bool shields_up = brave_shields::GetBraveShieldsEnabled(
+      HostContentSettingsMapFactory::GetForProfile(profile), url);
   auto fingerprinting_type = brave_shields::GetFingerprintingControlType(
-      HostContentSettingsMapFactory::GetForProfile(profile),
-      web_contents->GetLastCommittedURL());
+      HostContentSettingsMapFactory::GetForProfile(profile), url);
   // https://github.com/brave/brave-browser/issues/15265
   // Always use color scheme Light if fingerprinting mode strict
-  if (fingerprinting_type == ControlType::BLOCK) {
+  if (shields_up && fingerprinting_type == ControlType::BLOCK) {
     prefs->preferred_color_scheme = blink::mojom::PreferredColorScheme::kLight;
     changed = true;
   }

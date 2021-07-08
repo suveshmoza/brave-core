@@ -215,7 +215,7 @@
       <message name="IDS_BRAVE_NEW_TAB_SHOW_FAVORITES_DESC" desc="Desc for allowing customizing of top sites">Top sites are curated by you</message>
       <message name="IDS_BRAVE_NEW_TAB_SHOW_FRECENCY_LABEL" desc="Label for showing most visited istes as top sites">Frequently Visited</message>
       <message name="IDS_BRAVE_NEW_TAB_SHOW_FRECENCY_DESC" desc="Desc for showing most visited sites as top sites">Top sites are suggested based on websites you visit often</message>
-      <message name="IDS_BRAVE_NEW_TAB_ADD_SITE_MENU_LABEL" desc="Label for adding site to top sites menu item of topsites tiles">Add Site</message>
+      <message name="IDS_BRAVE_NEW_TAB_ADD_SITE_MENU_LABEL" desc="Label for adding site to top sites menu item of topsites tiles">Add site</message>
       <message name="IDS_BRAVE_NEW_TAB_SHOW_FRECENCY_MENU_LABEL" desc="Label for showing frecency menu item of topsites tiles">Show frequently visited</message>
       <message name="IDS_BRAVE_NEW_TAB_SHOW_FAVORITES_MENU_LABEL" desc="Label for showing favorites menu item of topsites tiles">Show favorites</message>
 
@@ -284,6 +284,9 @@
       </message>
       <message name="IDS_BRAVE_TODAY_PROMOTED" desc="Label for promoted content">
         Promoted
+      </message>
+      <message name="IDS_BRAVE_TODAY_DISPLAY_AD_LABEL" desc="Label for an advertisement">
+        Ad
       </message>
 
       <message name="IDS_BRAVE_NEW_TAB_STATS_TAB" desc="Brave Stats title">Brave Stats</message>
@@ -608,15 +611,15 @@
       <message name="IDS_BRAVE_REWARDS_TIP_MONTHLY_CONTRIBUTION_SET" desc="">Monthly contribution has been set.</message>
       <message name="IDS_BRAVE_REWARDS_TIP_NEXT_CONTRIBUTION_DATE" desc="">Next contribution date:</message>
       <message name="IDS_BRAVE_REWARDS_TIP_NOT_ENOUGH_TOKENS" desc="">Not enough tokens. Please <ph name="LINK_BEGIN">$1</ph>add funds<ph name="LINK_END">$2</ph>.</message>
-      <message name="IDS_BRAVE_REWARDS_TIP_ONE_TIME_TIP" desc="">One Time Tip</message>
-      <message name="IDS_BRAVE_REWARDS_TIP_ONE_TIME_TIP_AMOUNT" desc="">One time tip amount:</message>
+      <message name="IDS_BRAVE_REWARDS_TIP_ONE_TIME_TIP" desc="">One-Time Tip</message>
+      <message name="IDS_BRAVE_REWARDS_TIP_ONE_TIME_TIP_AMOUNT" desc="">One-time tip amount:</message>
       <message name="IDS_BRAVE_REWARDS_TIP_OPT_IN_REQUIRED" desc="">Hold on, you can’t tip yet</message>
       <message name="IDS_BRAVE_REWARDS_TIP_POST_HEADER" desc=""><ph name="USER">$1</ph>’s post</message>
       <message name="IDS_BRAVE_REWARDS_TIP_POST_HEADER_TWITTER" desc=""><ph name="USER">$1</ph>’s tweet</message>
       <message name="IDS_BRAVE_REWARDS_TIP_SORRY_TO_SEE_YOU_GO" desc="">Sorry to see you go…</message>
       <message name="IDS_BRAVE_REWARDS_TIP_SUPPORT_THIS_CREATOR" desc="">Support this creator</message>
       <message name="IDS_BRAVE_REWARDS_TIP_THANKS_FOR_THE_SUPPORT" desc="">Thanks for the support!</message>
-      <message name="IDS_BRAVE_REWARDS_TIP_TIP_HAS_BEEN_SET" desc="">Your one time tip has been sent.</message>
+      <message name="IDS_BRAVE_REWARDS_TIP_TIP_HAS_BEEN_SET" desc="">Your one-time tip has been sent.</message>
       <message name="IDS_BRAVE_REWARDS_TIP_TIP_POST_SUBTITLE" desc="">for their post</message>
       <message name="IDS_BRAVE_REWARDS_TIP_TWEET_ABOUT_SUPPORT" desc="">Tweet about your support</message>
 
@@ -794,10 +797,10 @@
       <message name="IDS_BRAVE_UI_OK" desc="">ok</message>
       <message name="IDS_BRAVE_UI_ON" desc="">on</message>
       <message name="IDS_BRAVE_UI_MONTHLY_TEXT" desc="">Monthly</message>
-      <message name="IDS_BRAVE_UI_ONE_TIME" desc="">One time</message>
+      <message name="IDS_BRAVE_UI_ONE_TIME" desc="">One-time</message>
       <message name="IDS_BRAVE_UI_ONE_TIME_DONATION" desc="">One-time Tips</message>
       <message name="IDS_BRAVE_UI_OPEN_BALANCE" desc="">Opening Balance</message>
-      <message name="IDS_BRAVE_UI_OPEN_ADS_HISTORY" desc="">7-day Ads History</message>
+      <message name="IDS_BRAVE_UI_OPEN_ADS_HISTORY" desc="">30-day Ads History</message>
       <message name="IDS_BRAVE_UI_PAYMENT" desc="">Payment</message>
       <message name="IDS_BRAVE_UI_PAYMENT_NOT_MADE" desc="">Payment not made.</message>
       <message name="IDS_BRAVE_UI_PAYMENT_PINNED_SITES_HEADER" desc="">Pinned sites are now</message>

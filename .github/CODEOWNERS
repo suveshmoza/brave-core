@@ -1,8 +1,8 @@
+brave/build/commands/ @bridiver
 patches/ @brave/patch-reviewers
 chromium_src/ @brave/chromium-src-reviewers
 script/build-bisect.py @bsclifton
 script/uplift.py @bsclifton
-vendor/brave-ios/ @kylehickinson
 /README.md @bsclifton
 Jenkinsfile @mihaiplesa
 DEPS @brave/deps-reviewers
@@ -105,3 +105,8 @@ third_party/bitcoin-core/BUILD.gn @orspetol
 # Network auditor
 build/commands/lib/whitelistedUrlPatterns.js @brave/sec-team
 build/commands/lib/whitelistedUrlPrefixes.js @brave/sec-team
+
+# iOS
+ios/ @brave/ios
+build/ios/ @brave/ios
+

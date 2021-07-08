@@ -7,9 +7,11 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "brave/browser/brave_browser_process.h"
+#include "brave/browser/ipfs/ipfs_blob_context_getter_factory.h"
 #include "brave/browser/ipfs/ipfs_service_factory.h"
 #include "brave/common/brave_paths.h"
 #include "brave/components/ipfs/blob_context_getter_factory.h"
@@ -63,7 +65,7 @@ class FakeIpfsService : public ipfs::IpfsService {
                           channel) {}
   ~FakeIpfsService() override {}
 
-  void LaunchDaemon(LaunchDaemonCallback callback) override {
+  void LaunchDaemon(BoolCallback callback) override {
     if (callback)
       std::move(callback).Run(launch_result_);
   }
@@ -94,9 +96,11 @@ class IpfsServiceBrowserTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     InProcessBrowserTest::SetUpOnMainThread();
     base::FilePath user_dir = base::FilePath(FILE_PATH_LITERAL("test"));
+    auto context_getter =
+        std::make_unique<IpfsBlobContextGetterFactory>(browser()->profile());
     fake_service_ = std::make_unique<FakeIpfsService>(
-        browser()->profile()->GetPrefs(), nullptr, nullptr, nullptr, user_dir,
-        chrome::GetChannel());
+        browser()->profile()->GetPrefs(), nullptr, std::move(context_getter),
+        nullptr, user_dir, chrome::GetChannel());
   }
 
   void ResetTestServer(
@@ -739,12 +743,13 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto error_caught =
-      EvalJsWithManualReply(contents,
-                            "fetch('ipfs://"
-                            "Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC/2')"
-                            "  .catch((e) => {"
-                            "        window.domAutomationController.send(true);"
-                            "  });");
+      EvalJs(contents,
+             "fetch('ipfs://"
+             "Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC/2')"
+             "  .catch((e) => {"
+             "        window.domAutomationController.send(true);"
+             "  });",
+             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   ASSERT_TRUE(error_caught.error.empty());
   EXPECT_EQ(base::Value(true), error_caught.value);
 }
@@ -763,16 +768,17 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CanFetchIPFSResourcesFromIPFS) {
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto got_fetch = EvalJsWithManualReply(
-      contents,
-      "fetch('ipfs://"
-      "Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC/2')"
-      "  .then(response => { response.text()"
-      "      .then((response_text) => {"
-      "        const result = response_text == 'simple content 2';"
-      "        window.domAutomationController.send(result);"
-      "      })})"
-      ".catch((x) => console.log('error: ' + x));");
+  auto got_fetch =
+      EvalJs(contents,
+             "fetch('ipfs://"
+             "Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC/2')"
+             "  .then(response => { response.text()"
+             "      .then((response_text) => {"
+             "        const result = response_text == 'simple content 2';"
+             "        window.domAutomationController.send(result);"
+             "      })})"
+             ".catch((x) => console.log('error: ' + x));",
+             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   ASSERT_TRUE(got_fetch.error.empty());
   EXPECT_EQ(base::Value(true), got_fetch.value);
 }
@@ -788,14 +794,15 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CannotLoadIframeFromHTTP) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   auto* child_frame = ChildFrameAt(contents->GetMainFrame(), 0);
-  auto location = EvalJsWithManualReply(
-      child_frame,
-      "const timer = setInterval(function () {"
-      "  if (document.readyState == 'complete') {"
-      "    clearInterval(timer);"
-      "    window.domAutomationController.send(window.location.href);"
-      "  }"
-      "}, 100);");
+  auto location =
+      EvalJs(child_frame,
+             "const timer = setInterval(function () {"
+             "  if (document.readyState == 'complete') {"
+             "    clearInterval(timer);"
+             "    window.domAutomationController.send(window.location.href);"
+             "  }"
+             "}, 100);",
+             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
 
   ASSERT_TRUE(location.error.empty());
   EXPECT_EQ(base::Value("chrome-error://chromewebdata/"), location.value);
@@ -815,21 +822,22 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CanLoadIFrameFromIPFS) {
       browser(), GURL("ipfs://Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC"));
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto result = EvalJsWithManualReply(
-      contents,
-      "const iframe = document.createElement('iframe');"
-      "iframe.src ="
-      "  'ipfs://Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC/2';"
-      "document.body.appendChild(iframe);"
-      "const timer = setInterval(function () {"
-      "  const iframeDoc = iframe.contentDocument || "
-      "      iframe.contentWindow.document;"
-      "  if (iframeDoc.readyState === 'complete' && "
-      "      iframeDoc.location.href !== 'about:blank') {"
-      "    clearInterval(timer);"
-      "    window.domAutomationController.send(window.location.href);"
-      "  }"
-      "}, 100);");
+  auto result =
+      EvalJs(contents,
+             "const iframe = document.createElement('iframe');"
+             "iframe.src ="
+             "  'ipfs://Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC/2';"
+             "document.body.appendChild(iframe);"
+             "const timer = setInterval(function () {"
+             "  const iframeDoc = iframe.contentDocument || "
+             "      iframe.contentWindow.document;"
+             "  if (iframeDoc.readyState === 'complete' && "
+             "      iframeDoc.location.href !== 'about:blank') {"
+             "    clearInterval(timer);"
+             "    window.domAutomationController.send(window.location.href);"
+             "  }"
+             "}, 100);",
+             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   ASSERT_TRUE(result.error.empty());
   // Make sure main frame URL didn't change
   auto* prefs = browser()->profile()->GetPrefs();
@@ -853,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CanLoadIPFSImageFromIPFS) {
       browser(), GURL("ipfs://Qmc2JTQo4iXf24g98otZmGFQq176eQ2Cdbb88qA5ToMEvC"));
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto loaded = EvalJsWithManualReply(
+  auto loaded = EvalJs(
       contents,
       "let img = document.createElement('img');"
       "img.src ="
@@ -863,7 +871,8 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CanLoadIPFSImageFromIPFS) {
       "};"
       "img.onerror = function() {"
       "  window.domAutomationController.send(true);"
-      "};");
+      "};",
+      content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   ASSERT_TRUE(loaded.error.empty());
   EXPECT_EQ(base::Value(true), loaded.value);
 }
@@ -877,7 +886,7 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CannotLoadIPFSImageFromHTTP) {
   ui_test_utils::NavigateToURL(browser(), GetURL("b.com", "/simple.html"));
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto loaded = EvalJsWithManualReply(
+  auto loaded = EvalJs(
       contents,
       "let img = document.createElement('img');"
       "img.src ="
@@ -887,7 +896,8 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, CannotLoadIPFSImageFromHTTP) {
       "};"
       "img.onerror = function() {"
       "  window.domAutomationController.send(true);"
-      "};");
+      "};",
+      content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   ASSERT_TRUE(loaded.error.empty());
   EXPECT_EQ(base::Value(true), loaded.value);
 }
@@ -1098,12 +1108,20 @@ IN_PROC_BROWSER_TEST_F(IpfsServiceBrowserTest, UpdaterRegistration) {
       g_brave_browser_process->ipfs_client_updater();
   auto* prefs = browser()->profile()->GetPrefs();
   {
-    std::unique_ptr<FakeIpfsService> fake_service(new FakeIpfsService(
-        prefs, nullptr, nullptr, updater, user_dir, chrome::GetChannel()));
+    auto context_getter =
+        std::make_unique<IpfsBlobContextGetterFactory>(browser()->profile());
+
+    std::unique_ptr<FakeIpfsService> fake_service(
+        new FakeIpfsService(prefs, nullptr, std::move(context_getter), updater,
+                            user_dir, chrome::GetChannel()));
   }
   {
-    std::unique_ptr<FakeIpfsService> fake_service(new FakeIpfsService(
-        prefs, nullptr, nullptr, updater, user_dir, chrome::GetChannel()));
+    auto context_getter =
+        std::make_unique<IpfsBlobContextGetterFactory>(browser()->profile());
+
+    std::unique_ptr<FakeIpfsService> fake_service(
+        new FakeIpfsService(prefs, nullptr, std::move(context_getter), updater,
+                            user_dir, chrome::GetChannel()));
 
     ASSERT_FALSE(fake_service->IsDaemonLaunched());
     ASSERT_FALSE(updater->IsRegistered());

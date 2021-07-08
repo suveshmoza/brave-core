@@ -10,15 +10,20 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_types.h"
 
 class PrefService;
+namespace base {
+class Value;
+}  // namespace base
 
 namespace brave_wallet {
 
 bool IsNativeWalletEnabled();
 // Equivalent to web3.utils.toHex(string);
 std::string ToHex(const std::string& data);
+std::string ToHex(const std::vector<uint8_t>& data);
 // Equivalent to web3.utils.keccak256(string)
 std::string KeccakHash(const std::string& input, bool to_hex = true);
 std::vector<uint8_t> KeccakHash(const std::vector<uint8_t>& input);
@@ -81,6 +86,10 @@ void SecureZeroData(void* data, size_t size);
 // because we call it both from the old extension and the new wallet when
 // it unlocks.
 void UpdateLastUnlockPref(PrefService* prefs);
+
+base::Value TransactionReceiptToValue(const TransactionReceipt& tx_receipt);
+base::Optional<TransactionReceipt> ValueToTransactionReceipt(
+    const base::Value& value);
 
 }  // namespace brave_wallet
 

@@ -5,11 +5,14 @@
 
 #include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 
+#include "brave/components/brave_wallet/browser/asset_ratio_controller.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/eth_json_rpc_controller.h"
+#include "brave/components/brave_wallet/browser/eth_tx_controller.h"
 #include "brave/components/brave_wallet/browser/keyring_controller.h"
 #include "brave/components/brave_wallet/browser/pref_names.h"
+#include "brave/components/brave_wallet/browser/swap_controller.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -24,6 +27,12 @@ BraveWalletService::BraveWalletService(
       brave_wallet::Network::kMainnet, url_loader_factory);
   keyring_controller_ =
       std::make_unique<brave_wallet::KeyringController>(prefs);
+  tx_controller_ = std::make_unique<brave_wallet::EthTxController>(
+      base::AsWeakPtr(this), prefs);
+  asset_ratio_controller_ =
+      std::make_unique<brave_wallet::AssetRatioController>(url_loader_factory);
+  swap_controller_ =
+      std::make_unique<brave_wallet::SwapController>(url_loader_factory);
 }
 
 BraveWalletService::~BraveWalletService() {}
@@ -38,6 +47,7 @@ void BraveWalletService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kBraveWalletPasswordEncryptorNonce, "");
   registry->RegisterStringPref(kBraveWalletEncryptedMnemonic, "");
   registry->RegisterIntegerPref(kBraveWalletDefaultKeyringAccountNum, 0);
+  registry->RegisterDictionaryPref(kBraveWalletTransactions);
   registry->RegisterBooleanPref(kShowWalletIconOnToolbar, true);
   registry->RegisterBooleanPref(kBraveWalletBackupComplete, false);
   registry->RegisterTimePref(kBraveWalletLastUnlockTime, base::Time());
@@ -50,6 +60,18 @@ brave_wallet::EthJsonRpcController* BraveWalletService::rpc_controller() const {
 brave_wallet::KeyringController* BraveWalletService::keyring_controller()
     const {
   return keyring_controller_.get();
+}
+brave_wallet::EthTxController* BraveWalletService::tx_controller() const {
+  return tx_controller_.get();
+}
+
+brave_wallet::AssetRatioController* BraveWalletService::asset_ratio_controller()
+    const {
+  return asset_ratio_controller_.get();
+}
+
+brave_wallet::SwapController* BraveWalletService::swap_controller() const {
+  return swap_controller_.get();
 }
 
 bool BraveWalletService::IsWalletBackedUp() const {

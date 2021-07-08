@@ -14,6 +14,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/referrer_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
@@ -69,7 +70,7 @@ struct BraveRequestInfo {
   GURL referrer;
   net::ReferrerPolicy referrer_policy =
       net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-  base::Optional<GURL> new_referrer;
+  absl::optional<GURL> new_referrer;
 
   std::string new_url_spec;
   // TODO(iefremov): rename to shields_up.
@@ -93,7 +94,6 @@ struct BraveRequestInfo {
 
   GURL* allowed_unsafe_redirect_url = nullptr;
   BraveNetworkDelegateEventType event_type = kUnknownEventType;
-  const base::ListValue* referral_headers_list = nullptr;
   BlockedBy blocked_by = kNotBlocked;
   std::string mock_data_url;
   GURL ipfs_gateway_url;

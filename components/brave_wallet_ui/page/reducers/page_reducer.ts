@@ -6,13 +6,20 @@
 
 import { createReducer } from 'redux-act'
 import * as Actions from '../actions/wallet_page_actions'
-import { PageState } from '../../constants/types'
-import { WalletCreatedPayloadType, RecoveryWordsAvailablePayloadType } from '../constants/action_types'
+import { PageState, AssetOptionType, AssetPriceTimeframe } from '../../constants/types'
+import { WalletCreatedPayloadType, RecoveryWordsAvailablePayloadType, SelectAssetPayloadType } from '../constants/action_types'
 
 const defaultState: PageState = {
   hasInitialized: false,
   showRecoveryPhrase: false,
-  invalidMnemonic: false
+  invalidMnemonic: false,
+  selectedTimeline: AssetPriceTimeframe.OneDay,
+  selectedAsset: undefined,
+  selectedAssetPrice: undefined,
+  selectedAssetPriceHistory: [],
+  portfolioPriceHistory: [],
+  userAssets: ['1', '2'],
+  isFetchingPriceHistory: false
 }
 
 const reducer = createReducer<PageState>({}, defaultState)
@@ -57,6 +64,35 @@ reducer.on(Actions.hasMnemonicError, (state: PageState, payload: boolean) => {
   return {
     ...state,
     invalidMnemonic: payload
+  }
+})
+
+reducer.on(Actions.updateSelectedAsset, (state: PageState, payload: AssetOptionType) => {
+  return {
+    ...state,
+    selectedAsset: payload
+  }
+})
+
+reducer.on(Actions.updatePriceInfo, (state: PageState, payload: SelectAssetPayloadType) => {
+  const history = payload.priceHistory ? payload.priceHistory.values : []
+  return {
+    ...state,
+    selectedAssetPrice: payload.priceHistory ? {
+      usd: payload.price,
+      btc: 0,
+      change24Hour: 0
+    } : undefined,
+    selectedAssetPriceHistory: history,
+    selectedTimeline: payload.timeFrame,
+    isFetchingPriceHistory: false
+  }
+})
+
+reducer.on(Actions.setIsFetchingPriceHistory, (state: PageState, payload: boolean) => {
+  return {
+    ...state,
+    isFetchingPriceHistory: payload
   }
 })
 

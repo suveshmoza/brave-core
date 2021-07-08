@@ -19,6 +19,8 @@ const char kFirstCheckMade[] = "brave.stats.first_check_made";
 // Set to true if the user met the threshold requirements and successfully
 // sent a ping to the stats-updater server.
 const char kThresholdCheckMade[] = "brave.stats.threshold_check_made";
+// Anonymous usage pings enabled
+const char kStatsReportingEnabled[] = "brave.stats.reporting_enabled";
 // Serialized query for to send to the stats-updater server. Needs to be saved
 // in the case that the user sends the standard usage ping, stops the browser,
 // meets the threshold requirements, and then starts the browser before the
@@ -70,6 +72,8 @@ const char kBraveTodayWeeklyCardViewsCount[] =
     "brave.today.p3a_weekly_card_views_count";
 const char kBraveTodayWeeklyCardVisitsCount[] =
     "brave.today.p3a_weekly_card_visits_count";
+const char kBraveTodayWeeklyDisplayAdViewedCount[] =
+    "brave.today.p3a_weekly_display_ad_viewed_count";
 const char kBraveEnabledMediaRouter[] = "brave.enable_media_router";
 const char kBinanceAccessToken[] = "brave.binance.access_token";
 const char kBinanceRefreshToken[] = "brave.binance.refresh_token";

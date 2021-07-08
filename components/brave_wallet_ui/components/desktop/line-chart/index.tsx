@@ -16,7 +16,9 @@ import theme from 'brave-ui/theme/colors/'
 import {
   StyledWrapper,
   LabelWrapper,
-  ChartLabel
+  ChartLabel,
+  LoadingOverlay,
+  LoadIcon
 } from './style'
 
 export interface Props {
@@ -24,12 +26,36 @@ export interface Props {
   onUpdateBalance: (value: number | undefined) => void
   isAsset: boolean
   isDown: boolean
+  isLoading: boolean
 }
 
+const EmptyChartData = [
+  {
+    date: '1',
+    close: 1
+  },
+  {
+    date: '2',
+    close: 1
+  },
+  {
+    date: '3',
+    close: 1
+  }
+]
+
 function LineChart (props: Props) {
-  const { priceData, onUpdateBalance, isAsset, isDown } = props
+  const { priceData, onUpdateBalance, isAsset, isDown, isLoading } = props
   const [position, setPosition] = React.useState<number>(0)
-  const lastPoint = priceData.length - 1
+
+  const chartData = React.useMemo(() => {
+    if (priceData.length <= 0) {
+      return EmptyChartData
+    }
+    return priceData
+  }, [priceData])
+
+  const lastPoint = chartData.length - 1
 
   // This is an animated Pulsating dot that will render at the end
   // of the line chart for the current price.
@@ -49,6 +75,13 @@ function LineChart (props: Props) {
     onUpdateBalance(undefined)
   }
 
+  const parseDate = (date: Date) => {
+    const formatedDate = new Date(date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
+    const formatedTime = new Date(date).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+    return `${formatedDate} ${formatedTime}`
+  }
+
+  // TODO: Need to refactor this to not allow label to go off chart area.
   const CustomTooltip = (value: any) => {
     if (value.active && value.payload && value.payload.length) {
       setPosition(value.coordinate.x)
@@ -56,7 +89,7 @@ function LineChart (props: Props) {
       const labelPosition = Math.trunc(value.coordinate.x) === 8 ? 'start' : Math.trunc(value.coordinate.x) - Math.trunc(value.viewBox.width) === 8 ? 'end' : 'middle'
       return (
         <LabelWrapper labelPosition={labelPosition}>
-          <ChartLabel>{value.label}</ChartLabel>
+          <ChartLabel>{parseDate(value.label)}</ChartLabel>
         </LabelWrapper>
       )
     }
@@ -65,9 +98,12 @@ function LineChart (props: Props) {
 
   return (
     <StyledWrapper>
+      <LoadingOverlay isLoading={isLoading}>
+        <LoadIcon />
+      </LoadingOverlay>
       <ResponsiveContainer width='99%' height='99%'>
         <AreaChart
-          data={priceData}
+          data={chartData}
           margin={{ top: 5, left: 8, right: 8, bottom: 0 }}
           onMouseLeave={onChartMouseLeave}
         >
@@ -80,16 +116,18 @@ function LineChart (props: Props) {
           </defs>
           <YAxis hide={true} domain={['auto', 'auto']} />
           <XAxis hide={true} dataKey='date' />
-          <Tooltip isAnimationActive={false} position={{ x: position, y: 0 }} content={<CustomTooltip />} />
+          {priceData.length > 0 &&
+            <Tooltip isAnimationActive={false} position={{ x: position, y: 0 }} content={<CustomTooltip />} />
+          }
           <Area
-            isAnimationActive={true}
+            isAnimationActive={false}
             type='monotone'
             dataKey='close'
             strokeWidth={2}
-            stroke={isAsset ? isDown ? theme.red600 : theme.teal600 : `url(#lineGradient)`}
+            stroke={isAsset ? isDown ? theme.red600 : theme.teal600 : priceData.length <= 0 ? '#BF14A2' : `url(#lineGradient)`}
             fill='none'
           />
-          <ReferenceDot x={priceData[lastPoint].date} y={priceData[lastPoint].close} shape={CustomReferenceDot} />
+          <ReferenceDot x={chartData[lastPoint].date.toString()} y={chartData[lastPoint].close} shape={CustomReferenceDot} />
         </AreaChart>
       </ResponsiveContainer>
     </StyledWrapper>

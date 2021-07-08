@@ -1,23 +1,68 @@
 import * as React from 'react'
 
 import { StyledWrapper } from './style'
-import { TopTabNavTypes, AppObjectType, AppsListType } from '../../../../constants/types'
+import {
+  TopTabNavTypes,
+  AppObjectType,
+  AppsListType,
+  PriceDataObjectType,
+  AssetOptionType,
+  UserAssetOptionType,
+  RPCTransactionType,
+  AssetPriceReturnInfo,
+  WalletAccountType,
+  AssetPriceTimeframe
+} from '../../../../constants/types'
 import { TopNavOptions } from '../../../../options/top-nav-options'
-import { TopTabNav, WalletMorePopup, BackupWarningBanner } from '../../'
+import { TopTabNav, BackupWarningBanner, AddAccountModal } from '../../'
 import { SearchBar, AppList } from '../../../shared'
 import locale from '../../../../constants/locale'
 import { AppsList } from '../../../../options/apps-list-options'
 import { filterAppList } from '../../../../utils/filter-app-list'
-import { PortfolioView } from '../'
+import { PortfolioView, AccountsView } from '../'
 
 export interface Props {
   onLockWallet: () => void
   onShowBackup: () => void
+  onChangeTimeline: (path: AssetPriceTimeframe) => void
+  onSelectAsset: (asset: AssetOptionType | undefined) => void
+  onCreateAccount: (name: string) => void
+  onImportAccount: (name: string, key: string) => void
+  onConnectHardwareWallet: (hardware: 'Ledger' | 'Trezor') => void
   needsBackup: boolean
+  accounts: WalletAccountType[]
+  selectedTimeline: AssetPriceTimeframe
+  portfolioPriceHistory: PriceDataObjectType[]
+  selectedAssetPriceHistory: PriceDataObjectType[]
+  selectedAssetPrice: AssetPriceReturnInfo | undefined
+  selectedAsset: AssetOptionType | undefined
+  portfolioBalance: string
+  transactions: (RPCTransactionType | undefined)[]
+  userAssetList: UserAssetOptionType[]
+  isLoading: boolean
 }
 
 const CryptoView = (props: Props) => {
-  const { onLockWallet, onShowBackup, needsBackup } = props
+  const {
+    onLockWallet,
+    onShowBackup,
+    onChangeTimeline,
+    onSelectAsset,
+    onCreateAccount,
+    onImportAccount,
+    onConnectHardwareWallet,
+    portfolioPriceHistory,
+    userAssetList,
+    selectedTimeline,
+    selectedAssetPriceHistory,
+    needsBackup,
+    accounts,
+    selectedAsset,
+    portfolioBalance,
+    transactions,
+    selectedAssetPrice,
+    isLoading
+  } = props
   const [selectedTab, setSelectedTab] = React.useState<TopTabNavTypes>('portfolio')
   const [favoriteApps, setFavoriteApps] = React.useState<AppObjectType[]>([
     AppsList[0].appList[0]
@@ -25,7 +70,7 @@ const CryptoView = (props: Props) => {
   const [filteredAppsList, setFilteredAppsList] = React.useState<AppsListType[]>(AppsList)
   const [hideNav, setHideNav] = React.useState<boolean>(false)
   const [showBackupWarning, setShowBackupWarning] = React.useState<boolean>(needsBackup)
-  const [showPopup, setShowPopup] = React.useState<boolean>(false)
+  const [showAddModal, setShowAddModal] = React.useState<boolean>(false)
 
   // In the future these will be actual paths
   // for example wallet/crypto/portfolio
@@ -56,37 +101,34 @@ const CryptoView = (props: Props) => {
     setHideNav(!hideNav)
   }
 
-  const onShowPopup = () => {
-    setShowPopup(true)
-  }
-
-  const onHidePopup = () => {
-    if (showPopup) {
-      setShowPopup(false)
-    }
-  }
-
-  const onShowSettings = () => {
-    alert('Will Show Settings')
-  }
-
   const onDismissBackupWarning = () => {
     setShowBackupWarning(false)
   }
 
+  const onClickAddAccount = () => {
+    setShowAddModal(true)
+  }
+
+  const onCloseAddModal = () => {
+    setShowAddModal(false)
+  }
+
   return (
-    <StyledWrapper onClick={onHidePopup}>
+    <StyledWrapper>
       {!hideNav &&
         <>
           <TopTabNav
             tabList={TopNavOptions}
             selectedTab={selectedTab}
             onSubmit={tabTo}
-            hasMoreButton={true}
-            onClickMoreButton={onShowPopup}
+            hasMoreButtons={true}
+            onLockWallet={onLockWallet}
           />
           {needsBackup && showBackupWarning &&
-            <BackupWarningBanner onDismiss={onDismissBackupWarning} />
+            <BackupWarningBanner
+              onDismiss={onDismissBackupWarning}
+              onBackup={onShowBackup}
+            />
           }
         </>
       }
@@ -106,16 +148,42 @@ const CryptoView = (props: Props) => {
         </>
       }
       {selectedTab === 'portfolio' &&
-        <PortfolioView toggleNav={toggleNav} />
+        <PortfolioView
+          toggleNav={toggleNav}
+          accounts={accounts}
+          onChangeTimeline={onChangeTimeline}
+          selectedAssetPriceHistory={selectedAssetPriceHistory}
+          selectedTimeline={selectedTimeline}
+          onSelectAsset={onSelectAsset}
+          onClickAddAccount={onClickAddAccount}
+          selectedAsset={selectedAsset}
+          portfolioBalance={portfolioBalance}
+          portfolioPriceHistory={portfolioPriceHistory}
+          transactions={transactions}
+          selectedAssetPrice={selectedAssetPrice}
+          userAssetList={userAssetList}
+          isLoading={isLoading}
+        />
       }
-      {selectedTab !== 'portfolio' && selectedTab !== 'defi' &&
+      {selectedTab === 'accounts' &&
+        <AccountsView
+          toggleNav={toggleNav}
+          accounts={accounts}
+          onClickBackup={onShowBackup}
+          onClickAddAccount={onClickAddAccount}
+        />
+      }
+      {selectedTab !== 'portfolio' && selectedTab !== 'defi' && selectedTab !== 'accounts' &&
         <h2>{selectedTab} view</h2>
       }
-      {showPopup &&
-        <WalletMorePopup
-          onClickLock={onLockWallet}
-          onClickSetting={onShowSettings}
-          onClickBackup={onShowBackup}
+      {showAddModal &&
+        <AddAccountModal
+          accounts={accounts}
+          title={locale.addAccount}
+          onClose={onCloseAddModal}
+          onCreateAccount={onCreateAccount}
+          onImportAccount={onImportAccount}
+          onConnectHardwareWallet={onConnectHardwareWallet}
         />
       }
     </StyledWrapper>

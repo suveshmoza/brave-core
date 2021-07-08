@@ -3,7 +3,9 @@ export interface WalletAccountType {
   name: string
   address: string
   balance: number
+  fiatBalance: string
   asset: string
+  accountType: string
 }
 
 export interface UserAccountType {
@@ -17,6 +19,19 @@ export interface AssetOptionType {
   name: string
   symbol: string
   icon: string
+}
+
+export interface UserAssetOptionType {
+  asset: AssetOptionType
+  assetBalance: number
+  fiatBalance: number
+}
+
+export interface UserWalletObject {
+  name: string
+  address: string
+  fiatBalance: string
+  assetBalance: number
 }
 
 export interface RPCAssetType {
@@ -62,6 +77,11 @@ export type TopTabNavTypes =
   | 'nfts'
   | 'accounts'
 
+export type AddAccountNavTypes =
+  | 'create'
+  | 'import'
+  | 'hardware'
+
 export type BuySendSwapTypes =
   | 'buy'
   | 'send'
@@ -76,6 +96,12 @@ export type ChartTimelineType =
   | '1Year'
   | 'AllTime'
 
+export interface AssetPriceReturnInfo {
+  usd: string
+  btc: number
+  change24Hour: number
+}
+
 export interface BuySendSwapObjectType {
   name: string
   id: BuySendSwapTypes
@@ -83,7 +109,7 @@ export interface BuySendSwapObjectType {
 
 export interface TopTabNavObjectType {
   name: string
-  id: TopTabNavTypes
+  id: TopTabNavTypes | AddAccountNavTypes
 }
 
 export interface NavObjectType {
@@ -108,11 +134,11 @@ export interface AppsListType {
 
 export interface ChartTimelineObjectType {
   name: string
-  id: ChartTimelineType
+  id: AssetPriceTimeframe
 }
 
 export interface PriceDataObjectType {
-  date: string
+  date: Date | number
   close: number
 }
 
@@ -124,6 +150,7 @@ export interface WalletState {
   isWalletBackedUp: boolean
   hasIncorrectPassword: boolean
   accounts: WalletAccountType[]
+  transactions: RPCTransactionType[]
 }
 
 export interface PanelState {
@@ -138,7 +165,14 @@ export interface PageState {
   hasInitialized: boolean
   showRecoveryPhrase: boolean
   invalidMnemonic: boolean
+  selectedTimeline: AssetPriceTimeframe
+  selectedAsset: AssetOptionType | undefined
+  selectedAssetPrice: AssetPriceReturnInfo | undefined
+  selectedAssetPriceHistory: GetAssetPriceHistoryReturnInfo[]
+  portfolioPriceHistory: PriceDataObjectType[]
+  userAssets: string[]
   mnemonic?: string
+  isFetchingPriceHistory: boolean
 }
 
 export interface WalletPageState {
@@ -163,6 +197,61 @@ export interface UnlockWalletReturnInfo {
   isWalletUnlocked: boolean
 }
 
+export enum AssetPriceTimeframe {
+  Live = 0,
+  OneDay = 1,
+  OneWeek = 2,
+  OneMonth = 3,
+  ThreeMonths = 4,
+  OneYear = 5,
+  All = 6
+}
+
+export interface SwapParams {
+  takerAddress: string
+  sellAmount: string
+  buyAmount: string
+  buyToken: string
+  sellToken: string
+  buyTokenPercentageFee: number
+  slippagePercentage: number
+  feeRecipient: string
+  gasPrice: string
+}
+
+export interface SwapResponse {
+  price: string
+  guaranteedPrice: string
+  to: string
+  data: string
+  value: string
+  gas: string
+  estimatedGas: string
+  gasPrice: string
+  protocolFee: string
+  minimumProtocolFee: string
+  buyTokenAddress: string
+  sellTokenAddress: string
+  buyAmount: string
+  sellAmount: string
+  allowanceTarget: string
+  sellTokenToEthRate: string
+  buyTokenToEthRate: string
+}
+
+export interface GetAssetPriceReturnInfo {
+  price: string
+}
+
+export interface GetAssetPriceHistoryReturnInfo {
+  price: string,
+  date: MojoTime
+}
+
+export interface GetAssetPriceHistoryReturnObjectInfo {
+  values: GetAssetPriceHistoryReturnInfo[]
+}
+
 export interface RestoreWalletReturnInfo {
   isValidMnemonic: boolean
 }
@@ -171,12 +260,20 @@ export interface WalletAPIHandler {
   getWalletInfo: () => Promise<WalletInfo>
   lockWallet: () => Promise<void>
   unlockWallet: (password: string) => Promise<UnlockWalletReturnInfo>
+  getAssetPrice: (asset: string) => Promise<GetAssetPriceReturnInfo>
+  getAssetPriceHistory: (asset: string, timeframe: AssetPriceTimeframe) => Promise<GetAssetPriceHistoryReturnObjectInfo>
   addFavoriteApp: (appItem: AppObjectType) => Promise<void>
   removeFavoriteApp: (appItem: AppObjectType) => Promise<void>
   restoreWallet: (mnemonic: string, password: string) => Promise<RestoreWalletReturnInfo>
+  getPriceQuote: (swapParams: SwapParams) => Promise<SwapResponse>
+  getTransactionPayload: (swapParams: SwapParams) => Promise<SwapResponse>
 }
 
 export interface RecoveryObject {
   value: string,
   id: number
+}
+
+export interface MojoTime {
+  internalValue: number
 }

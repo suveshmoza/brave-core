@@ -42,6 +42,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IPFS_LOCAL_NODE_ENABLED)
+#include "base/threading/thread_restrictions.h"
 #include "brave/components/ipfs/import/ipfs_import_worker_base.h"
 #include "brave/components/ipfs/import/ipfs_link_import_worker.h"
 #include "brave/components/ipfs/keys/ipns_keys_manager.h"
@@ -124,7 +125,7 @@ IpfsService::IpfsService(
   }
 #if BUILDFLAG(IPFS_LOCAL_NODE_ENABLED)
   ipns_keys_manager_ = std::make_unique<IpnsKeysManager>(
-      blob_context_getter_factory.get(), url_loader_factory.get(),
+      blob_context_getter_factory_.get(), url_loader_factory.get(),
       server_endpoint_);
   AddObserver(ipns_keys_manager_.get());
 #endif
@@ -211,7 +212,7 @@ void IpfsService::RestartDaemon() {
   auto launch_callback =
       base::BindOnce(&IpfsService::LaunchDaemon, base::Unretained(this));
   ShutdownDaemon(base::BindOnce(
-      [](base::OnceCallback<void(LaunchDaemonCallback)> launch_callback,
+      [](base::OnceCallback<void(BoolCallback)> launch_callback,
          const bool success) {
         if (!success) {
           VLOG(1) << "Unable to shutdown daemon";
@@ -280,7 +281,79 @@ void IpfsService::Shutdown() {
   ipfs_service_.reset();
   ipfs_pid_ = -1;
 }
+
 #if BUILDFLAG(IPFS_LOCAL_NODE_ENABLED)
+// static
+bool IpfsService::WaitUntilExecutionFinished(base::Process process) {
+  bool exited = false;
+  int exit_code = 0;
+  base::ScopedAllowBaseSyncPrimitives allow_wait_for_process;
+  exited = process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(10),
+                                          &exit_code);
+  if (!exited)
+    process.Terminate(0, true);
+  return exited && !exit_code;
+}
+void IpfsService::RotateKey(const std::string& oldkey, BoolCallback callback) {
+  auto executable_path = GetIpfsExecutablePath();
+  if (IsDaemonLaunched() || executable_path.empty()) {
+    if (callback)
+      std::move(callback).Run(false);
+    return;
+  }
+  base::CommandLine cmdline(executable_path);
+  cmdline.AppendArg("key");
+  cmdline.AppendArg("rotate");
+  cmdline.AppendArg("--oldkey=" + oldkey);
+  ExecuteNodeCommand(cmdline, GetDataPath(), std::move(callback));
+}
+
+void IpfsService::ExportKey(const std::string& key,
+                            const base::FilePath& target_path,
+                            BoolCallback callback) {
+  base::FilePath path = GetIpfsExecutablePath();
+  if (path.empty())
+    return;
+
+  base::CommandLine cmdline(path);
+  cmdline.AppendArg("key");
+  cmdline.AppendArg("export");
+  cmdline.AppendArg("-o=" + target_path.MaybeAsASCII());
+  cmdline.AppendArg(key);
+  ExecuteNodeCommand(cmdline, GetDataPath(), std::move(callback));
+}
+void IpfsService::ExecuteNodeCommand(const base::CommandLine& command_line,
+                                     const base::FilePath& data,
+                                     BoolCallback callback) {
+  base::LaunchOptions options;
+#if defined(OS_WIN)
+  options.environment[L"IPFS_PATH"] = data.value();
+#else
+  options.environment["IPFS_PATH"] = data.value();
+#endif
+
+#if defined(OS_LINUX)
+  options.kill_on_parent_death = true;
+#endif
+#if defined(OS_WIN)
+  options.start_hidden = true;
+#endif
+  base::Process process = base::LaunchProcess(command_line, options);
+  if (!process.IsValid()) {
+    if (callback)
+      std::move(callback).Run(false);
+    return;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+       base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&IpfsService::WaitUntilExecutionFinished,
+                     std::move(process)),
+      std::move(callback));
+}
+
 void IpfsService::NotifyIpnsKeysLoaded(bool result) {
   for (auto& observer : observers_) {
     observer.OnIpnsKeysLoaded(result);
@@ -544,7 +617,7 @@ void IpfsService::StartDaemonAndLaunch(
       std::move(success_callback)));
 }
 
-void IpfsService::LaunchDaemon(LaunchDaemonCallback callback) {
+void IpfsService::LaunchDaemon(BoolCallback callback) {
   if (IsDaemonLaunched()) {
     if (callback)
       std::move(callback).Run(true);
@@ -568,7 +641,7 @@ void IpfsService::LaunchDaemon(LaunchDaemonCallback callback) {
   }
 }
 
-void IpfsService::ShutdownDaemon(ShutdownDaemonCallback callback) {
+void IpfsService::ShutdownDaemon(BoolCallback callback) {
   if (IsDaemonLaunched()) {
     Shutdown();
   }
@@ -578,7 +651,7 @@ void IpfsService::ShutdownDaemon(ShutdownDaemonCallback callback) {
   }
 
   if (callback)
-    std::move(callback).Run(true);
+    std::move(callback).Run(!IsDaemonLaunched());
 }
 
 void IpfsService::GetConfig(GetConfigCallback callback) {

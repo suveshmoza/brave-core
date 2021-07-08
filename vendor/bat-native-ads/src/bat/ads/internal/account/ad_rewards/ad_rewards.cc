@@ -213,7 +213,7 @@ bool AdRewards::SetFromDictionary(base::Value* dictionary) {
     return false;
   }
 
-  const base::Optional<double> unreconciled_estimated_pending_rewards =
+  const absl::optional<double> unreconciled_estimated_pending_rewards =
       dictionary->FindDoubleKey("unreconciled_estimated_pending_rewards");
   unreconciled_estimated_pending_rewards_ =
       unreconciled_estimated_pending_rewards.value_or(0.0);
@@ -289,6 +289,9 @@ void AdRewards::OnGetPayments(const UrlResponse& url_response) {
     return;
   }
 
+  unreconciled_estimated_pending_rewards_ = 0.0;
+  ConfirmationsState::Get()->Save();
+
   GetAdGrants();
 }
 
@@ -340,9 +343,6 @@ void AdRewards::OnDidReconcileAdRewards() {
   BLOG(1, "Successfully reconciled ad rewards");
 
   retry_timer_.Stop();
-
-  unreconciled_estimated_pending_rewards_ = 0.0;
-  ConfirmationsState::Get()->Save();
 
   if (delegate_) {
     delegate_->OnDidReconcileAdRewards();

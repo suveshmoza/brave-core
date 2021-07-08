@@ -3,17 +3,24 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-source_set("brave_vpn") {
+static_library("brave_vpn") {
   sources = [
     "brave_vpn_connection_info.cc",
     "brave_vpn_connection_info.h",
     "brave_vpn_connection_manager.cc",
     "brave_vpn_connection_manager.h",
+    "brave_vpn_service.cc",
+    "brave_vpn_service.h",
   ]
 
   deps = [
     ":brave_vpn_internal",
     "//base",
+    "//brave/components/api_request_helper:api_request_helper",
+    "//components/keyed_service/core",
+    "//net",
+    "//services/network/public/cpp",
+    "//url",
   ]
 
   libs = []

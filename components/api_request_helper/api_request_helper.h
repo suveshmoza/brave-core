@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -23,6 +22,7 @@ class SimpleURLLoader;
 
 namespace api_request_helper {
 
+// Anyone is welcome to use APIRequestHelper to reduce boilerplate
 class APIRequestHelper {
  public:
   APIRequestHelper(
@@ -39,9 +39,12 @@ class APIRequestHelper {
                const std::string& payload,
                const std::string& payload_content_type,
                bool auto_retry_on_network_change,
-               ResultCallback callback);
+               ResultCallback callback,
+               const std::map<std::string, std::string>& headers = {});
 
  private:
+  APIRequestHelper(const APIRequestHelper&) = delete;
+  APIRequestHelper& operator=(const APIRequestHelper&) = delete;
   using SimpleURLLoaderList =
       std::list<std::unique_ptr<network::SimpleURLLoader>>;
   void OnResponse(SimpleURLLoaderList::iterator iter,

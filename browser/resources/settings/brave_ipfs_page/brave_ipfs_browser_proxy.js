@@ -14,6 +14,7 @@ export class BraveIPFSBrowserProxy {
   getIPFSEnabled () {}
   setIPFSStorageMax (value) {}
   importIpnsKey () {}
+  exportIPNSKey (value) {}
 }
 
 /**
@@ -31,6 +32,11 @@ export class BraveIPFSBrowserProxyImpl {
   importIpnsKey (value) {
     chrome.send('importIpnsKey', [value])
   }
+
+  exportIPNSKey (value) {
+    chrome.send('exportIPNSKey', [value])
+  }
+
   notifyIpfsNodeStatus () {
     chrome.send('notifyIpfsNodeStatus', [])
   }
@@ -107,7 +113,16 @@ export class BraveIPFSBrowserProxyImpl {
       chrome.ipfs.getIpnsKeysList(resolve)
     })
   }
-
+  /** @override */
+  rotateKey (name) {
+    return new Promise(resolve => {
+      if (!chrome.ipfs) {
+        resolve(false)
+        return
+      }
+      chrome.ipfs.rotateKey(name, resolve)
+    })
+  }
   /** @override */
   addIpnsKey (name) {
     return new Promise(resolve => {

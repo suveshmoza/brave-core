@@ -13,6 +13,7 @@
 #include "brave/browser/ui/brave_ads/ad_notification_view.h"
 #include "brave/browser/ui/brave_ads/ad_notification_view_factory.h"
 #include "brave/browser/ui/brave_ads/bounds_util.h"
+#include "brave/browser/ui/brave_ads/window_util.h"
 #include "brave/components/brave_ads/browser/features.h"
 #include "brave/components/brave_ads/common/pref_names.h"
 #include "brave/grit/brave_generated_resources.h"
@@ -21,6 +22,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
@@ -34,9 +37,7 @@
 #include "ui/gfx/shadow_util.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -164,6 +165,17 @@ void AdNotificationPopup::OnClick(const std::string& notification_id) {
   popup->FadeOut();
 }
 
+// static
+gfx::Rect AdNotificationPopup::GetBounds(const std::string& notification_id) {
+  DCHECK(!notification_id.empty());
+
+  DCHECK(g_ad_notification_popups[notification_id]);
+  AdNotificationPopup* popup = g_ad_notification_popups[notification_id];
+  DCHECK(popup);
+
+  return popup->CalculateBounds();
+}
+
 void AdNotificationPopup::OnDisplayRemoved(
     const display::Display& old_display) {
   // Called when |old_display| has been removed
@@ -197,10 +209,10 @@ void AdNotificationPopup::OnWorkAreaChanged() {
 void AdNotificationPopup::OnPaintBackground(gfx::Canvas* canvas) {
   DCHECK(canvas);
 
-  gfx::RectF bounds(GetWidget()->GetLayer()->bounds());
+  gfx::Rect bounds(GetWidget()->GetLayer()->bounds());
   bounds.Inset(-GetShadowMargin());
 
-  const bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
+  const bool should_use_dark_colors = ShouldUseDarkModeTheme();
 
   // Draw border with drop shadow
   cc::PaintFlags border_flags;
@@ -391,7 +403,6 @@ void AdNotificationPopup::RecomputeAlignment() {
   gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
   const gfx::NativeView native_view = GetWidget()->GetNativeView();
   AdjustBoundsToFitWorkAreaForNativeView(&bounds, native_view);
-
   GetWidget()->SetBounds(bounds);
 }
 

@@ -7,7 +7,7 @@ import { MiddlewareAPI, Dispatch, AnyAction } from 'redux'
 import AsyncActionHandler from '../../../common/AsyncActionHandler'
 import * as WalletPageActions from '../actions/wallet_page_actions'
 import * as WalletActions from '../../common/actions/wallet_actions'
-import { CreateWalletPayloadType, RestoreWalletPayloadType } from '../constants/action_types'
+import { CreateWalletPayloadType, RestoreWalletPayloadType, UpdateSelectedAssetType } from '../constants/action_types'
 import { WalletAPIHandler } from '../../constants/types'
 
 type Store = MiddlewareAPI<Dispatch<AnyAction>, any>
@@ -63,5 +63,48 @@ handler.on(WalletPageActions.walletBackupComplete.getType(), async (store) => {
   await apiProxy.notifyWalletBackupComplete()
   await refreshWalletInfo(store)
 })
+
+// TODO: Spot Price will need to return btc: value and change24Hour: value in the future
+handler.on(WalletPageActions.selectAsset.getType(), async (store, payload: UpdateSelectedAssetType) => {
+  store.dispatch(WalletPageActions.updateSelectedAsset(payload.asset))
+  store.dispatch(WalletPageActions.setIsFetchingPriceHistory(true))
+  const walletHandler = await getWalletHandler()
+  if (payload.asset) {
+    const price = await walletHandler.getAssetPrice(payload.asset.symbol.toLowerCase())
+    const priceHistory = await walletHandler.getAssetPriceHistory(payload.asset.symbol.toLowerCase(), payload.timeFrame)
+    store.dispatch(WalletPageActions.updatePriceInfo({ priceHistory: priceHistory, price: price.price, timeFrame: payload.timeFrame }))
+  } else {
+    store.dispatch(WalletPageActions.updatePriceInfo({ priceHistory: undefined, price: '', timeFrame: payload.timeFrame }))
+  }
+})
+
+// TODO(bbondy): Remove - Example usage:
+//
+// import { SwapParams } from '../../constants/types'
+// const walletHandler = await getWalletHandler()
+// var swap_response = await walletHandler.getPriceQuote({
+//   takerAddress: '',
+//   sellAmount: '',
+//   buyAmount: '1000000000000000000000',
+//   buyToken: 'ETH',
+//   sellToken: 'DAI',
+//   buyTokenPercentageFee: 0,
+//   slippagePercentage: 0,
+//   feeRecipient: '',
+//   gasPrice: ''
+// })
+// console.log('wallet price quote: ', swap_response)
+//  var swap_response2 = await walletHandler.getTransactionPayload({
+//   takerAddress: '',
+//   sellAmount: '',
+//   buyAmount: '1000000000000000000000',
+//   buyToken: 'ETH',
+//   sellToken: 'DAI',
+//   buyTokenPercentageFee: 0,
+//   slippagePercentage: 0,
+//   feeRecipient: '',
+//   gasPrice: ''
+// })
+// console.log(swap_response2)
 
 export default handler.middleware

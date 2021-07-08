@@ -139,7 +139,9 @@ void AdsImpl::ChangeLocale(const std::string& locale) {
 }
 
 void AdsImpl::OnPrefChanged(const std::string& path) {
-  if (path == prefs::kAdsPerHour) {
+  if (path == prefs::kEnabled) {
+    MaybeServeAdNotificationsAtRegularIntervals();
+  } else if (path == prefs::kAdsPerHour) {
     ad_notification_serving_->OnAdsPerHourChanged();
   } else if (path == prefs::kAdsSubdivisionTargetingCode) {
     subdivision_targeting_->MaybeFetchForCurrentLocale();
@@ -184,7 +186,7 @@ void AdsImpl::OnTextLoaded(const int32_t tab_id,
     return;
   }
 
-  const base::Optional<TabInfo> last_visible_tab =
+  const absl::optional<TabInfo> last_visible_tab =
       TabManager::Get()->GetLastVisible();
   if (!SameDomainOrHost(url, last_visible_tab ? last_visible_tab->url : "")) {
     purchase_intent_processor_->Process(GURL(url));
@@ -349,6 +351,18 @@ void AdsImpl::OnInlineContentAdEvent(
     const std::string& creative_instance_id,
     const InlineContentAdEventType event_type) {
   inline_content_ad_->FireEvent(uuid, creative_instance_id, event_type);
+}
+
+void AdsImpl::PurgeOrphanedAdEventsForType(
+    const mojom::BraveAdsAdType ad_type) {
+  PurgeOrphanedAdEvents(ad_type, [ad_type](const Result result) {
+    if (result != SUCCESS) {
+      BLOG(0, "Failed to purge orphaned ad events for " << ad_type);
+      return;
+    }
+
+    BLOG(1, "Successfully purged orphaned ad events for " << ad_type);
+  });
 }
 
 void AdsImpl::RemoveAllHistory(RemoveAllHistoryCallback callback) {
@@ -655,7 +669,8 @@ void AdsImpl::MaybeServeAdNotificationsAtRegularIntervals() {
     return;
   }
 
-  if ((BrowserManager::Get()->IsActive() ||
+  if (IsInitialized() &&
+      (BrowserManager::Get()->IsActive() ||
        AdsClientHelper::Get()->CanShowBackgroundNotifications()) &&
       settings::GetAdsPerHour() > 0) {
     ad_notification_serving_->StartServingAdsAtRegularIntervals();
@@ -791,6 +806,10 @@ void AdsImpl::OnAdTransfer(const AdInfo& ad) {
 
 void AdsImpl::OnConversion(
     const ConversionQueueItemInfo& conversion_queue_item) {
+  if (!ShouldRewardUser()) {
+    return;
+  }
+
   account_->Deposit(conversion_queue_item.creative_instance_id,
                     ConfirmationType::kConversion);
 }

@@ -27,6 +27,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -410,10 +411,6 @@ void RewardsServiceImpl::InitPrefChangeRegistrar() {
 }
 
 void RewardsServiceImpl::OnPreferenceChanged(const std::string& key) {
-  if (profile_->GetPrefs()->GetInteger(prefs::kVersion) == -1) {
-    return;
-  }
-
   if (key == prefs::kAutoContributeEnabled) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kAutoContributeEnabled)) {
       StartLedgerProcessIfNecessary();
@@ -1039,7 +1036,7 @@ void RewardsServiceImpl::LoadURL(
 
   auto loader_it = url_loaders_.insert(url_loaders_.begin(), std::move(loader));
   loader_it->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
       base::BindOnce(&RewardsServiceImpl::OnURLLoaderComplete,
@@ -1136,7 +1133,7 @@ void ParseCaptchaResponse(
     std::string* image,
     std::string* id,
     std::string* hint) {
-  base::Optional<base::Value> value = base::JSONReader::Read(response);
+  absl::optional<base::Value> value = base::JSONReader::Read(response);
   if (!value || !value->is_dict()) {
     return;
   }
@@ -2504,9 +2501,9 @@ void RewardsServiceImpl::PrepareLedgerEnvForTesting() {
   }
 
   bat_ledger_service_->SetTesting();
-
-  SetPublisherMinVisitTime(1);
   SetShortRetries(true);
+
+  profile_->GetPrefs()->SetInteger(prefs::kMinVisitTime, 1);
 
   // this is needed because we are using braveledger_request_util::buildURL
   // directly in RewardsBrowserTest

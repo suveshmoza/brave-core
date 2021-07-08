@@ -12,9 +12,9 @@
 
 #include "base/scoped_observation.h"
 #include "brave/browser/ui/brave_ads/ad_notification.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -64,6 +64,9 @@ class AdNotificationPopup : public views::WidgetDelegateView,
 
   // User clicked the notification popup view for the given |notification_id|
   static void OnClick(const std::string& notification_id);
+
+  // Return the bounds for the given |notification_id|
+  static gfx::Rect GetBounds(const std::string& notification_id);
 
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& old_display) override;

@@ -19,7 +19,7 @@ bool ParseResult(const std::string& json, base::Value* result) {
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
   if (!records_v) {
     LOG(ERROR) << "Invalid response, could not parse JSON, JSON is: " << json;
     return false;
@@ -86,11 +86,6 @@ bool ParseEthGetTransactionReceipt(const std::string& json,
     return false;
   DCHECK(result_dict);
 
-  const std::string* transaction_hash =
-      result_dict->FindStringPath("transactionHash");
-  DCHECK(transaction_hash);
-  receipt->transaction_hash = *transaction_hash;
-
   if (!result_dict->GetString("transactionHash", &receipt->transaction_hash))
     return false;
   std::string transaction_index;
@@ -120,10 +115,10 @@ bool ParseEthGetTransactionReceipt(const std::string& json,
   if (!HexValueToUint256(gas_used, &receipt->gas_used))
     return false;
 
-  if (!result_dict->GetString("contractAddress", &receipt->contract_address))
-    return false;
+  // contractAddress can be null
+  result_dict->GetString("contractAddress", &receipt->contract_address);
 
-    // TODO(darkdh): logs
+  // TODO(darkdh): logs
 #if 0
   const base::ListValue* logs = nullptr;
   if (!result_dict->GetList("logs", &logs))

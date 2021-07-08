@@ -19,6 +19,7 @@
 #include "brave/common/brave_switches.h"
 #include "brave/common/resource_bundle_helper.h"
 #include "brave/components/brave_ads/browser/buildflags/buildflags.h"
+#include "brave/components/speedreader/buildflags.h"
 #include "brave/renderer/brave_content_renderer_client.h"
 #include "brave/utility/brave_content_utility_client.h"
 #include "build/build_config.h"
@@ -161,9 +162,9 @@ void BraveMainDelegate::PreSandboxStartup() {
 
 bool BraveMainDelegate::BasicStartupComplete(int* exit_code) {
   BraveCommandLineHelper command_line(base::CommandLine::ForCurrentProcess());
-#if BUILDFLAG(BRAVE_ADS_ENABLED)
+#if BUILDFLAG(BRAVE_ADS_ENABLED) || BUILDFLAG(ENABLE_SPEEDREADER)
   command_line.AppendSwitch(switches::kEnableDomDistiller);
-#endif
+#endif  // BUILDFLAG(BRAVE_ADS_ENABLED) || BUILDFLAG(ENABLE_SPEEDREADER)
   command_line.AppendSwitch(switches::kDisableDomainReliability);
   command_line.AppendSwitch(switches::kNoPings);
 
@@ -221,6 +222,7 @@ bool BraveMainDelegate::BasicStartupComplete(int* exit_code) {
     features::kIdleDetection.name,
     features::kLangClientHintHeader.name,
     features::kNotificationTriggers.name,
+    features::kPrivacySandboxSettings.name,
     features::kSignedExchangePrefetchCacheForNavigations.name,
     features::kSignedExchangeSubresourcePrefetch.name,
     features::kSubresourceWebBundles.name,
