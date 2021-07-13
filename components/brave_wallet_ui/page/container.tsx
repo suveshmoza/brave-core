@@ -73,6 +73,7 @@ function Container (props: Props) {
 
   const [view, setView] = React.useState<NavTypes>('crypto')
   const [inputValue, setInputValue] = React.useState<string>('')
+  const [showAddModal, setShowAddModal] = React.useState<boolean>(false)
 
   // In the future these will be actual paths
   // for example wallet/rewards
@@ -201,8 +202,15 @@ function Container (props: Props) {
     return formated
   }, [selectedAssetPriceHistory])
 
-  const onCreateWallet = () => {
-    // Logic here to add a wallet
+  const onToggleAddModal = () => {
+    setShowAddModal(!showAddModal)
+  }
+
+  const onCreateAccount = (name: string) => {
+    const created = props.walletPageActions.addAccountToWallet({ accountName: name })
+    if (created) {
+      onToggleAddModal()
+    }
   }
 
   const onConnectHardwareWallet = () => {
@@ -260,9 +268,11 @@ function Container (props: Props) {
                   transactions={transactions}
                   userAssetList={userAssetList}
                   onConnectHardwareWallet={onConnectHardwareWallet}
-                  onCreateAccount={onCreateWallet}
+                  onCreateAccount={onCreateAccount}
                   onImportAccount={onImportAccount}
                   isLoading={isFetchingPriceHistory}
+                  showAddModal={showAddModal}
+                  onToggleAddModal={onToggleAddModal}
                 />
               )}
             </>

@@ -56,10 +56,10 @@ void WalletHandler::GetWalletInfo(GetWalletInfoCallback callback) {
       favorite_apps.begin(), favorite_apps.end(), favorite_apps_copy.begin(),
       [](const brave_wallet::mojom::AppItemPtr& favorite_app)
           -> brave_wallet::mojom::AppItemPtr { return favorite_app.Clone(); });
-  std::move(callback).Run(keyring_controller->IsDefaultKeyringCreated(),
-                          keyring_controller->IsLocked(),
-                          std::move(favorite_apps_copy),
-                          service->IsWalletBackedUp(), accounts);
+  std::move(callback).Run(
+      keyring_controller->IsDefaultKeyringCreated(),
+      keyring_controller->IsLocked(), std::move(favorite_apps_copy),
+      service->IsWalletBackedUp(), accounts, service->WalletAccountNames());
 }
 
 void WalletHandler::LockWallet() {
@@ -168,4 +168,17 @@ void WalletHandler::NotifyWalletBackupComplete() {
   auto* profile = Profile::FromWebUI(web_ui_);
   auto* service = GetBraveWalletService(profile);
   service->NotifyWalletBackupComplete();
+}
+
+void WalletHandler::SetInitialAccountNames(
+    const std::vector<std::string>& account_names) {
+  auto* profile = Profile::FromWebUI(web_ui_);
+  auto* service = GetBraveWalletService(profile);
+  service->SetInitialAccountNames(account_names);
+}
+
+void WalletHandler::AddNewAccountName(const std::string& account_name) {
+  auto* profile = Profile::FromWebUI(web_ui_);
+  auto* service = GetBraveWalletService(profile);
+  service->AddNewAccountName(account_name);
 }

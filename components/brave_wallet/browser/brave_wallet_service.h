@@ -7,6 +7,8 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_BROWSER_BRAVE_WALLET_SERVICE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -43,6 +45,9 @@ class BraveWalletService : public KeyedService,
   brave_wallet::AssetRatioController* asset_ratio_controller() const;
   brave_wallet::SwapController* swap_controller() const;
 
+  std::vector<std::string> WalletAccountNames() const;
+  void SetInitialAccountNames(const std::vector<std::string>& account_names);
+  void AddNewAccountName(const std::string& account_name);
   bool IsWalletBackedUp() const;
   void NotifyWalletBackupComplete();
 

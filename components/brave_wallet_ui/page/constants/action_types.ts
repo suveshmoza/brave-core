@@ -8,6 +8,10 @@ export type CreateWalletPayloadType = {
   password: string
 }
 
+export type AddAccountToWalletPayloadType = {
+  accountName: string
+}
+
 export type RestoreWalletPayloadType = {
   mnemonic: string,
   password: string

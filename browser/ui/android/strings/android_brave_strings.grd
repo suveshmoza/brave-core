@@ -1217,7 +1217,7 @@ until they verify, or until 90 days have passed.
         Get weekly updates
       </message>
       <message name="IDS_GET_WEEKLY_UPDATES_TEXT" desc="Text for onboading bottomsheet.">
-        Be informed about which websites you visit are the most privacy invasive.\n\nOnly you can see these privacy statistics. No personal data or browsing history ever leaves the Brave browser on your device.
+        Be informed about which websites you visit are the most privacy-invasive.\n\nOnly you can see these privacy statistics. No personal data or browsing history ever leaves the Brave browser on your device.
       </message>
       <message name="IDS_TURN_ON_PRIVACY_STATS" desc="Button text for onboading bottomsheet.">
         Turn on privacy reports
@@ -1726,9 +1726,6 @@ until they verify, or until 90 days have passed.
     <message name="IDS_SWAP">
       Swap
     </message>
-    <message name="IDS_TITLE_LOCK">
-      Lock
-    </message>
     <message name="IDS_DEFI_SECURE_STORAGE">
       DeFi &amp; Secure Crypto Storage
     </message>
@@ -1843,6 +1840,9 @@ until they verify, or until 90 days have passed.
     <message name="IDS_PASSWORD">Password</message>
     <message name="IDS_UNLOCK_WALLET_TITLE">Enter your password to unlock</message>
     <message name="IDS_PASSWORD_TEXT">Password must be at least 7 characters containg at least one number and a special character</message>
+    <message name="IDS_BRAVE_SAFE_BROWSING_NO_PROTECTION_SUMMARY" desc="Summary for Safe Browsing no protection mode.">
+        Does not protect you against dangerous websites, downloads, and extensions.
+    </message>
     </messages>
   </release>
 </grit>
