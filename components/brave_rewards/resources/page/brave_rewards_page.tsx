@@ -165,6 +165,10 @@ function recurringTipRemoved (success: boolean) {
   getActions().onRecurringTipRemoved(success)
 }
 
+function externalWalletProviderList (list: Rewards.ExternalWalletProvider[]) {
+  getActions().onExternalWalletProviderList(list)
+}
+
 function pendingContributions (list: Rewards.PendingContribution[]) {
   getActions().onPendingContributions(list)
 }
@@ -262,6 +266,14 @@ function onboardingStatus (result: { showOnboarding: boolean }) {
   getActions().onOnboardingStatus(result.showOnboarding)
 }
 
+function enabledInlineTippingPlatforms (list: string[]) {
+  getActions().onEnabledInlineTippingPlatforms(list)
+}
+
+function externalWalletLogin (url: string) {
+  window.open(url, '_self')
+}
+
 // Expose functions to Page Handlers.
 // TODO(petemill): Use event listeners instead.
 // @ts-ignore
@@ -273,6 +285,7 @@ window.brave_rewards = {
   promotionFinish,
   reconcileStamp,
   contributeList,
+  externalWalletProviderList,
   excludedList,
   balanceReport,
   contributionAmount,
@@ -310,7 +323,9 @@ window.brave_rewards = {
   completeReset,
   paymentId,
   walletPassphrase,
-  onboardingStatus
+  onboardingStatus,
+  enabledInlineTippingPlatforms,
+  externalWalletLogin
 }
 
 document.addEventListener('DOMContentLoaded', initialize)

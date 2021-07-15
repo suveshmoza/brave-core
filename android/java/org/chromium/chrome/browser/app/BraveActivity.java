@@ -67,7 +67,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
-import org.chromium.chrome.browser.crypto_wallet.CryptoWalletActivity;
+import org.chromium.chrome.browser.crypto_wallet.BraveWalletActivity;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
@@ -84,6 +84,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.website.BraveShieldsContentSettings;
 import org.chromium.chrome.browser.privacy.settings.BravePrivacySettings;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rate.RateDialogFragment;
 import org.chromium.chrome.browser.rate.RateUtils;
@@ -292,6 +293,11 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
             return;
         }
 
+        // Make sure this option is disabled
+        if (PrivacyPreferencesManagerImpl.getInstance().getNetworkPredictionEnabled()) {
+            PrivacyPreferencesManagerImpl.getInstance().setNetworkPredictionEnabled(false);
+        }
+
         if (BraveRewardsHelper.hasRewardsEnvChange()) {
             BravePrefServiceBridge.getInstance().resetPromotionLastFetchStamp();
             BraveRewardsHelper.setRewardsEnvChange(false);
@@ -439,9 +445,9 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
     }
 
     private void openBraveWallet() {
-        Intent cryptoWalletIntent = new Intent(this, CryptoWalletActivity.class);
-        cryptoWalletIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(cryptoWalletIntent);
+        Intent braveWalletIntent = new Intent(this, BraveWalletActivity.class);
+        braveWalletIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(braveWalletIntent);
     }
 
     private void checkSetDefaultBrowserModal() {

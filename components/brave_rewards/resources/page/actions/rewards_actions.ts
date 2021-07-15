@@ -94,6 +94,10 @@ export const onBalanceReport = (properties: {month: number, year: number, report
   report: properties.report
 })
 
+export const onExternalWalletProviderList = (list: Rewards.ExternalWalletProvider[]) => action(types.ON_EXTERNAL_WALLET_PROVIDER_LIST, {
+  list
+})
+
 export const getBalanceReport = (month: number, year: number) => action(types.GET_BALANCE_REPORT, {
   month,
   year
@@ -316,10 +320,6 @@ export const onPaymentId = (paymentId: string) => action(types.ON_PAYMENT_ID, {
   paymentId
 })
 
-export const setFirstLoad = (firstLoad: boolean) => action(types.SET_FIRST_LOAD, {
-  firstLoad
-})
-
 export const getWalletPassphrase = () => action(types.GET_WALLET_PASSPHRASE)
 
 export const onWalletPassphrase = (passphrase: string) => action(types.ON_WALLET_PASSPHRASE, {
@@ -334,4 +334,10 @@ export const onOnboardingStatus = (showOnboarding: boolean) => action(types.ON_O
 
 export const saveOnboardingResult = (result: 'opted-in' | 'dismissed') => action(types.SAVE_ONBOARDING_RESULT, {
   result
+})
+
+export const getEnabledInlineTippingPlatforms = () => action(types.GET_ENABLED_INLINE_TIPPING_PLATFORMS)
+
+export const onEnabledInlineTippingPlatforms = (platforms: string[]) => action(types.ON_ENABLED_INLINE_TIPPING_PLATFORMS, {
+  platforms
 })

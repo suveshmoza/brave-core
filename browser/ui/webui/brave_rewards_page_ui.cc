@@ -26,11 +26,13 @@
 #include "brave/components/brave_rewards/browser/rewards_notification_service_observer.h"
 #include "brave/components/brave_rewards/browser/rewards_service.h"
 #include "brave/components/brave_rewards/browser/rewards_service_observer.h"
+#include "brave/components/brave_rewards/common/pref_names.h"
 #include "brave/components/brave_rewards/resources/grit/brave_rewards_page_generated_map.h"
 #include "brave/components/brave_rewards/resources/grit/brave_rewards_resources.h"
 #include "brave/components/l10n/browser/locale_helper.h"
 #include "brave/components/l10n/common/locale_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -134,6 +136,7 @@ class RewardsDOMHandler : public WebUIMessageHandler,
 
   void OnGetOneTimeTips(ledger::type::PublisherInfoList list);
 
+  void GetEnabledInlineTippingPlatforms(const base::ListValue* args);
   void SetInlineTippingPlatformEnabled(const base::ListValue* args);
 
   void GetPendingContributions(const base::ListValue* args);
@@ -196,6 +199,11 @@ class RewardsDOMHandler : public WebUIMessageHandler,
 
   void GetOnboardingStatus(const base::ListValue* args);
   void SaveOnboardingResult(const base::ListValue* args);
+  void GetExternalWalletProviders(const base::ListValue* args);
+  void SetExternalWalletType(const base::ListValue* args);
+
+  void OnExternalWalletTypeUpdated(const ledger::type::Result result,
+                                   ledger::type::ExternalWalletPtr wallet);
 
   // RewardsServiceObserver implementation
   void OnRewardsInitialized(
@@ -419,6 +427,10 @@ void RewardsDOMHandler::RegisterMessages() {
       base::BindRepeating(&RewardsDOMHandler::GetStatement,
       base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "brave_rewards.getEnabledInlineTippingPlatforms",
+      base::BindRepeating(&RewardsDOMHandler::GetEnabledInlineTippingPlatforms,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "brave_rewards.setInlineTippingPlatformEnabled",
       base::BindRepeating(&RewardsDOMHandler::SetInlineTippingPlatformEnabled,
       base::Unretained(this)));
@@ -475,6 +487,14 @@ void RewardsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("brave_rewards.saveOnboardingResult",
       base::BindRepeating(&RewardsDOMHandler::SaveOnboardingResult,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "brave_rewards.getExternalWalletProviders",
+      base::BindRepeating(&RewardsDOMHandler::GetExternalWalletProviders,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "brave_rewards.setExternalWalletType",
+      base::BindRepeating(&RewardsDOMHandler::SetExternalWalletType,
+                          base::Unretained(this)));
 }
 
 void RewardsDOMHandler::Init() {
@@ -566,6 +586,29 @@ void RewardsDOMHandler::GetAutoContributeProperties(
   rewards_service_->GetAutoContributeProperties(
       base::BindOnce(&RewardsDOMHandler::OnGetAutoContributeProperties,
                      weak_factory_.GetWeakPtr()));
+}
+
+void RewardsDOMHandler::SetExternalWalletType(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  if (!rewards_service_)
+    return;
+
+  AllowJavascript();
+  const std::string wallet_type = args->GetList()[0].GetString();
+  rewards_service_->SetExternalWalletType(wallet_type);
+
+  rewards_service_->GetExternalWallet(
+      base::BindOnce(&RewardsDOMHandler::OnExternalWalletTypeUpdated,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void RewardsDOMHandler::OnExternalWalletTypeUpdated(
+    const ledger::type::Result result,
+    ledger::type::ExternalWalletPtr wallet) {
+  if (IsJavascriptAllowed()) {
+    CallJavascriptFunction("brave_rewards.externalWalletLogin",
+                           base::Value(wallet->login_url));
+  }
 }
 
 void RewardsDOMHandler::OnGetAutoContributeProperties(
@@ -1445,6 +1488,28 @@ void RewardsDOMHandler::OnRecurringTipRemoved(
                          base::Value(success));
 }
 
+void RewardsDOMHandler::GetEnabledInlineTippingPlatforms(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  // TODO(zenparsing): Consider using a PrefChangeRegistrar to monitor changes
+  // to these values.
+  auto* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  base::Value list(base::Value::Type::LIST);
+
+  if (prefs->GetBoolean(brave_rewards::prefs::kInlineTipGithubEnabled))
+    list.Append("github");
+
+  if (prefs->GetBoolean(brave_rewards::prefs::kInlineTipRedditEnabled))
+    list.Append("reddit");
+
+  if (prefs->GetBoolean(brave_rewards::prefs::kInlineTipTwitterEnabled))
+    list.Append("twitter");
+
+  CallJavascriptFunction("brave_rewards.enabledInlineTippingPlatforms",
+                         std::move(list));
+}
+
 void RewardsDOMHandler::SetInlineTippingPlatformEnabled(
     const base::ListValue* args) {
   AllowJavascript();
@@ -1584,7 +1649,6 @@ void RewardsDOMHandler::OnGetExternalWallet(
     ledger::type::ExternalWalletPtr wallet) {
   if (IsJavascriptAllowed()) {
     base::Value data(base::Value::Type::DICTIONARY);
-
     data.SetIntKey("result", static_cast<int>(result));
     base::Value wallet_dict(base::Value::Type::DICTIONARY);
 
@@ -1601,7 +1665,6 @@ void RewardsDOMHandler::OnGetExternalWallet(
     }
 
     data.SetKey("wallet", std::move(wallet_dict));
-
     CallJavascriptFunction("brave_rewards.externalWallet", data);
   }
 }
@@ -1948,6 +2011,23 @@ void RewardsDOMHandler::SaveOnboardingResult(const base::ListValue* args) {
   AllowJavascript();
   if (args->GetList()[0].GetString() == "opted-in")
     rewards_service_->EnableRewards();
+}
+
+void RewardsDOMHandler::GetExternalWalletProviders(
+    const base::ListValue* args) {
+  if (!rewards_service_)
+    return;
+
+  AllowJavascript();
+  base::Value data(base::Value::Type::LIST);
+
+  std::vector<std::string> providers =
+      rewards_service_->GetExternalWalletProviders();
+  for (std::string provider : providers) {
+    data.Append(provider);
+  }
+
+  CallJavascriptFunction("brave_rewards.externalWalletProviderList", data);
 }
 
 }  // namespace

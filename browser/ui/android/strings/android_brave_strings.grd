@@ -1490,7 +1490,7 @@ until they verify, or until 90 days have passed.
         Brave Private Ads will appear as a normal notification. You control how often you see these ads in settings.
       </message>
       <message name="IDS_WHEN_DO_YOU_RECEIVE_REWARDS" desc="Brave rewards onboarding title">
-        When do you receive rewards
+        When do you receive rewards?
       </message>
       <message name="IDS_WHEN_DO_YOU_RECEIVE_REWARDS_TEXT" desc="Brave rewards onboarding title">
         Your earned tokens from Brave Private Ads throughout the current month will arrive on the 5th of the next month.
@@ -1541,7 +1541,7 @@ until they verify, or until 90 days have passed.
         Go Back
       </message>
       <message name="IDS_LETS_TAKE_A_QUICK_TOUR" desc="Brave rewards onboarding button text">
-        Lets Take A Quick Tour
+        Let's Take A Quick Tour
       </message>
       <message name="IDS_BRAVE_REWARDS_WELCOME_LAYOUT_TEXT" desc="Brave rewards welcome layout text">
         After you receive your first ads payout you can come back and tip this creator!
@@ -1705,23 +1705,11 @@ until they verify, or until 90 days have passed.
       <message name="IDS_CONTINUE_TO_LOGIN" desc="Uphold continue to login text">
         continue to login
       </message>
-      <message name="IDS_TITLE_CRYPTO">
-        Crypto
-      </message>
-    <message name="IDS_TITLE_REWARDS">
-      Rewards
-    </message>
-    <message name="IDS_TITLE_CARDS">
-      Cards
-    </message>
     <message name="IDS_SEND">
       Send
     </message>
     <message name="IDS_SEARCH_TITLE">
       Search
-    </message>
-    <message name="IDS_MY">
-      My <ph name="TITLE">%1$s</ph>
     </message>
     <message name="IDS_SWAP">
       Swap
@@ -1843,6 +1831,9 @@ until they verify, or until 90 days have passed.
     <message name="IDS_BRAVE_SAFE_BROWSING_NO_PROTECTION_SUMMARY" desc="Summary for Safe Browsing no protection mode.">
         Does not protect you against dangerous websites, downloads, and extensions.
     </message>
+    <message name="IDS_PHRASES_DID_NOT_MATCH">Phrases did not match, Please try again.</message>
+    <message name="IDS_ACCOUNT_RECOVERY_FAILED">Account recovery failed. Please try again.</message>
+    <message name="IDS_MAINNET">Mainnet</message>
     </messages>
   </release>
 </grit>

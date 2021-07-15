@@ -12,7 +12,7 @@ export const defaultState: Rewards.State = {
   enabledAds: false,
   enabledAdsMigrated: false,
   enabledContribute: false,
-  firstLoad: null,
+  firstLoad: false,
   contributionMinTime: 8,
   contributionMinVisits: 1,
   contributionMonthly: 0,
@@ -60,6 +60,7 @@ export const defaultState: Rewards.State = {
   },
   pendingContributions: [],
   excludedList: [],
+  externalWalletProviderList: [],
   balance: {
     total: 0,
     wallets: {}

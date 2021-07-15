@@ -253,6 +253,38 @@ const rewardsReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State
       state.adsData.adsEarningsLastMonth = data.adsEarningsLastMonth
       break
     }
+    case types.GET_ENABLED_INLINE_TIPPING_PLATFORMS: {
+      chrome.send('brave_rewards.getEnabledInlineTippingPlatforms')
+      break
+    }
+    case types.ON_ENABLED_INLINE_TIPPING_PLATFORMS: {
+      const inlineTip = {
+        twitter: false,
+        reddit: false,
+        github: false
+      }
+
+      for (const platform of action.payload.platforms) {
+        switch (platform) {
+          case 'github':
+            inlineTip.github = true
+            break
+          case 'reddit':
+            inlineTip.reddit = true
+            break
+          case 'twitter':
+            inlineTip.twitter = true
+            break
+        }
+      }
+
+      state = {
+        ...state,
+        inlineTip
+      }
+
+      break
+    }
     case types.ON_INLINE_TIP_SETTINGS_CHANGE: {
       if (!state.inlineTip) {
         state.inlineTip = {
@@ -331,7 +363,7 @@ const rewardsReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State
         break
       }
 
-      if (data.walletType === 'uphold' || data.walletType === 'bitflyer') {
+      if (data.walletType === 'uphold' || data.walletType === 'bitflyer' || data.walletType === 'gemini') {
         chrome.send('brave_rewards.fetchBalance')
 
         if (data.action === 'authorization') {
@@ -423,10 +455,6 @@ const rewardsReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State
         ...state,
         paymentId: action.payload.paymentId
       }
-      break
-    }
-    case types.SET_FIRST_LOAD: {
-      state.firstLoad = action.payload.firstLoad
       break
     }
     case types.GET_ONBOARDING_STATUS: {
