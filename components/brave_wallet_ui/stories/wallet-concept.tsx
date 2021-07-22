@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { WalletWidgetStandIn } from './style'
 import {
-  SideNav,
+  // SideNav,
   WalletPageLayout,
   WalletSubViewLayout,
   CryptoView,
@@ -18,11 +18,12 @@ import {
   OrderTypes,
   UserAccountType,
   SlippagePresetObjectType,
-  ExpirationPresetObjectType
+  ExpirationPresetObjectType,
+  ToOrFromType
 } from '../constants/types'
 import Onboarding from './screens/onboarding'
 import BackupWallet from './screens/backup-wallet'
-import { NavOptions } from '../options/side-nav-options'
+// import { NavOptions } from '../options/side-nav-options'
 import { AssetOptions } from '../options/asset-options'
 import { NetworkOptions } from '../options/network-options'
 import { SlippagePresetOptions } from '../options/slippage-preset-options'
@@ -45,7 +46,7 @@ export default {
 
 export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boolean }) => {
   const { onboarding, locked } = args
-  const [view, setView] = React.useState<NavTypes>('crypto')
+  const [view] = React.useState<NavTypes>('crypto')
   const [needsOnboarding, setNeedsOnboarding] = React.useState<boolean>(onboarding)
   const [walletLocked, setWalletLocked] = React.useState<boolean>(locked)
   const [needsBackup, setNeedsBackup] = React.useState<boolean>(true)
@@ -65,14 +66,16 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
   const [exchangeRate, setExchangeRate] = React.useState('0.0027533')
   const [slippageTolerance, setSlippageTolerance] = React.useState<SlippagePresetObjectType>(SlippagePresetOptions[0])
   const [orderExpiration, setOrderExpiration] = React.useState<ExpirationPresetObjectType>(ExpirationPresetOptions[0])
+  const [toAddress, setToAddress] = React.useState('')
+  const [sendAmount, setSendAmount] = React.useState('')
   const [fromAmount, setFromAmount] = React.useState('')
   const [toAmount, setToAmount] = React.useState('')
 
   // In the future these will be actual paths
   // for example wallet/rewards
-  const navigateTo = (path: NavTypes) => {
-    setView(path)
-  }
+  // const navigateTo = (path: NavTypes) => {
+  //   setView(path)
+  // }
 
   const completeWalletSetup = (recoveryVerified: boolean) => {
     setNeedsOnboarding(false)
@@ -295,7 +298,7 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
     alert('Will update Watchlist')
   }
 
-  const onSelectSwapAsset = (asset: AssetOptionType, toOrFrom: string) => {
+  const onSelectTransactAsset = (asset: AssetOptionType, toOrFrom: ToOrFromType) => {
     if (toOrFrom === 'from') {
       setFromAsset(asset)
     } else {
@@ -310,6 +313,10 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
 
   const onSubmitSwap = () => {
     alert('Submit Swap Transaction')
+  }
+
+  const onSubmitSend = () => {
+    alert('Submit Send Transaction')
   }
 
   const calculateToAmount = (amount: number, market: boolean) => {
@@ -358,6 +365,10 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
     calculateToAmount(Number(value), false)
   }
 
+  const onSetSendAmount = (value: string) => {
+    setSendAmount(value)
+  }
+
   const onSetFromAmount = (value: string) => {
     setFromAmount(value)
     calculateToAmount(Number(value), true)
@@ -367,13 +378,17 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
     setToAmount(value)
   }
 
+  const onSetToAddress = (value: string) => {
+    setToAddress(value)
+  }
+
   return (
     <WalletPageLayout>
-      <SideNav
+      {/* <SideNav
         navList={NavOptions}
         selectedButton={view}
         onSubmit={navigateTo}
-      />
+      /> */}
       <WalletSubViewLayout>
         {needsOnboarding ?
           (
@@ -442,8 +457,8 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
             </>
           )}
       </WalletSubViewLayout>
-      <WalletWidgetStandIn>
-        {!needsOnboarding && !walletLocked &&
+      {!needsOnboarding && !walletLocked &&
+        <WalletWidgetStandIn>
           <BuySendSwap
             orderType={orderType}
             swapToAsset={toAsset}
@@ -454,25 +469,30 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
             accounts={mockUserAccounts}
             selectedNetwork={selectedNetwork}
             selectedAccount={selectedAccount}
+            sendAmount={sendAmount}
             fromAmount={fromAmount}
             toAmount={toAmount}
             fromAssetBalance={fromAssetBalance}
             toAssetBalance={toAssetBalance}
+            toAddress={toAddress}
+            onSetSendAmount={onSetSendAmount}
+            onSetToAddress={onSetToAddress}
             onSetFromAmount={onSetFromAmount}
             onSetToAmount={onSetToAmount}
+            onSubmitSend={onSubmitSend}
             onSubmitSwap={onSubmitSwap}
             flipSwapAssets={flipSwapAssets}
             onSelectNetwork={onSelectNetwork}
             onSelectAccount={onSelectAccount}
             onToggleOrderType={onToggleOrderType}
-            onSelectSwapAsset={onSelectSwapAsset}
+            onSelectAsset={onSelectTransactAsset}
             onSelectExpiration={onSelectExpiration}
             onSetExchangeRate={onSetExchangeRate}
             onSelectSlippageTolerance={onSelectSlippageTolerance}
             onSelectPresetAmount={onSelectPresetAmount}
           />
-        }
-      </WalletWidgetStandIn>
+        </WalletWidgetStandIn>
+      }
     </WalletPageLayout>
   )
 }

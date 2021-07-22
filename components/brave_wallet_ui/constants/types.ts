@@ -72,9 +72,7 @@ export type NavTypes =
 
 export type TopTabNavTypes =
   | 'portfolio'
-  | 'prices'
-  | 'defi'
-  | 'nfts'
+  | 'apps'
   | 'accounts'
 
 export type AddAccountNavTypes =
@@ -297,8 +295,10 @@ export interface NetworkOptionsType {
   abbr: string
 }
 
-export type SwapViewTypes =
+export type BuySendSwapViewTypes =
   | 'swap'
+  | 'buy'
+  | 'send'
   | 'acounts'
   | 'networks'
   | 'assets'
@@ -328,3 +328,7 @@ export interface AmountPresetObjectType {
   name: string
   id: AmountPresetTypes
 }
+
+export type ToOrFromType =
+  | 'to'
+  | 'from'
