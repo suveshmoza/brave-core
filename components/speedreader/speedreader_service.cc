@@ -119,4 +119,8 @@ void SpeedreaderService::IncrementPromptCount() {
   prefs_->SetInteger(kSpeedreaderPrefPromptCount, count + 1);
 }
 
+void SpeedreaderService::SetFontScale(float scale) {
+  LOG(ERROR) << "Called SetFontScale()";
+}
+
 }  // namespace speedreader

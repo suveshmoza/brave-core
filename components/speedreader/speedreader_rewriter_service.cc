@@ -35,7 +35,8 @@ std::string GetDistilledPageStylesheet(const base::FilePath& stylesheet_path) {
         IDR_SPEEDREADER_STYLE_DESKTOP);
   }
 
-  return "<style id=\"brave_speedreader_style\">" + stylesheet + "</style>";
+  auto speedreader_js = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_SPEEDREADER_JS);
+  return "<script>" + speedreader_js + "</script>" + "<style id=\"brave_speedreader_style\">" + stylesheet + "</style>";
 }
 
 }  // namespace

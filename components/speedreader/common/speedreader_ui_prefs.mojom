@@ -1,0 +1,7 @@
+module speedreader.mojom;
+
+import "mojo/public/mojom/base/values.mojom";
+
+interface SpeedreaderUIPrefs {
+  SetFontScale(float scale);
+};

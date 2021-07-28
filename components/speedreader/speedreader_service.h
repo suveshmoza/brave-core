@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "brave/components/speedreader/common/speedreader_ui_prefs.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefRegistrySimple;
@@ -15,7 +16,7 @@ class PrefService;
 
 namespace speedreader {
 
-class SpeedreaderService : public KeyedService {
+class SpeedreaderService : public mojom::SpeedreaderUIPrefs, public KeyedService {
  public:
   explicit SpeedreaderService(PrefService* prefs);
   ~SpeedreaderService() override;
@@ -26,6 +27,8 @@ class SpeedreaderService : public KeyedService {
   bool IsEnabled();
   bool ShouldPromptUserToEnable() const;
   void IncrementPromptCount();
+
+  void SetFontScale(float scale) override;
 
   SpeedreaderService(const SpeedreaderService&) = delete;
   SpeedreaderService& operator=(const SpeedreaderService&) = delete;

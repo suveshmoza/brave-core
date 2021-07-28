@@ -1,9 +1,10 @@
-# Copyright (c) 2020 The Brave Authors. All rights reserved.
+# Copyright (c) 2021 The Brave Authors. All rights reserved.
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import("//brave/components/brave_wallet/common/buildflags/buildflags.gni")
+import("//brave/components/speedreader/buildflags.gni")
 
 brave_chrome_renderer_sources = [
   "//brave/renderer/brave_content_renderer_client.cc",
@@ -21,6 +22,10 @@ brave_chrome_renderer_public_deps = [
   "//third_party/blink/public:blink",
   "//third_party/blink/public/common",
 ]
+
+if (enable_speedreader) {
+  deps += [ "//brave/components/speedreader/renderer" ]
+}
 
 if (brave_wallet_enabled) {
   brave_chrome_renderer_public_deps += [
