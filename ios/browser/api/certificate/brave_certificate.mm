@@ -14,6 +14,7 @@
 #import "brave/ios/browser/api/certificate/utils/brave_certificate_x509_utils.h"
 
 // base
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
@@ -76,7 +77,7 @@
             &errors));
 
     if (!extended_cert_) {
-      NSLog(@"Error: %s\n", errors.ToDebugString().c_str());
+      LOG(ERROR) << errors.ToDebugString();
       return nullptr;
     }
 
