@@ -14,6 +14,7 @@
 #include "brave/browser/brave_wallet/keyring_controller_factory.h"
 #include "brave/browser/brave_wallet/swap_controller_factory.h"
 #include "brave/components/brave_wallet/browser/asset_ratio_controller.h"
+#include "brave/components/brave_wallet/browser/erc_token_registry.h"
 #include "brave/components/brave_wallet/browser/hd_keyring.h"
 #include "brave/components/brave_wallet/browser/keyring_controller.h"
 #include "brave/components/brave_wallet/browser/swap_controller.h"
@@ -103,10 +104,12 @@ void WalletHandler::UnlockWallet(const std::string& password,
   keyring_controller_->Unlock(password, std::move(callback));
 }
 
-void WalletHandler::GetAssetPrice(const std::string& asset,
+void WalletHandler::GetAssetPrice(const std::vector<std::string>& from_assets,
+                                  const std::vector<std::string>& to_assets,
                                   GetAssetPriceCallback callback) {
   EnsureConnected();
-  asset_ratio_controller_->GetPrice(asset, std::move(callback));
+  asset_ratio_controller_->GetPrice(from_assets, to_assets,
+                                    std::move(callback));
 }
 
 void WalletHandler::GetAssetPriceHistory(
@@ -116,6 +119,23 @@ void WalletHandler::GetAssetPriceHistory(
   EnsureConnected();
   asset_ratio_controller_->GetPriceHistory(asset, timeframe,
                                            std::move(callback));
+}
+
+void WalletHandler::GetTokenByContract(const std::string& contract,
+                                       GetTokenByContractCallback callback) {
+  auto* registry = brave_wallet::ERCTokenRegistry::GetInstance();
+  std::move(callback).Run(registry->GetTokenByContract(contract));
+}
+
+void WalletHandler::GetTokenBySymbol(const std::string& symbol,
+                                     GetTokenBySymbolCallback callback) {
+  auto* registry = brave_wallet::ERCTokenRegistry::GetInstance();
+  std::move(callback).Run(registry->GetTokenBySymbol(symbol));
+}
+
+void WalletHandler::GetAllTokens(GetAllTokensCallback callback) {
+  auto* registry = brave_wallet::ERCTokenRegistry::GetInstance();
+  std::move(callback).Run(registry->GetAllTokens());
 }
 
 void WalletHandler::GetPriceQuote(brave_wallet::mojom::SwapParamsPtr params,

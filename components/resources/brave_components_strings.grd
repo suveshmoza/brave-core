@@ -221,7 +221,6 @@
 
       <message name="IDS_BRAVE_NEW_TAB_SHOW_REWARDS" desc="Text for settings show rewards option">Show Brave Rewards</message>
       <message name="IDS_BRAVE_NEW_TAB_SHOW_BINANCE" desc="Text for show binance option">Show Binance</message>
-      <message name="IDS_BRAVE_NEW_TAB_SHOW_TOGETHER" desc="Text for show together option">Brave Together</message>
       <message name="IDS_BRAVE_NEW_TAB_SHOW_CARDS" desc="Text for cards option">Cards</message>
       <message name="IDS_BRAVE_NEW_TAB_BRANDED_WALLPAPER_OPT_IN" desc="Text for setting to opt-in to Branded Wallpapers on New Tab Page">Show Sponsored Images</message>
       <message name="IDS_BRAVE_NEW_TAB_TOP_SITES" desc="Top Sites title">top sites</message>
@@ -233,13 +232,13 @@
         Back
       </message>
 
-      <message name="IDS_BRAVE_TOGETHER_PROMPT_TITLE" desc="Title for prompt about Brave Together">
+      <message name="IDS_BRAVE_TOGETHER_PROMPT_TITLE" desc="Title for prompt about Brave Talk">
         You can start a private call in Brave.
       </message>
-      <message name="IDS_BRAVE_TOGETHER_PROMPT_DESCRIPTION" desc="Description for prompt about Brave Together">
+      <message name="IDS_BRAVE_TOGETHER_PROMPT_DESCRIPTION" desc="Description for prompt about Brave Talk">
         Start unlimited calls with friends and colleagues in Brave Talk.
       </message>
-      <message name="IDS_BRAVE_TOGETHER_PROMPT_ACTION" desc="Button text for prompt about Brave Together">
+      <message name="IDS_BRAVE_TOGETHER_PROMPT_ACTION" desc="Button text for prompt about Brave Talk">
         Try it out
       </message>
 
@@ -303,7 +302,7 @@
       <message name="IDS_BRAVE_NEW_TAB_CARDS_DESC" desc="Toggle cards description">By turning off Cards, all cards currently visible will be hidden. However, you may still be notified of new cards.</message>
 
       <if expr="enable_sidebar">
-        <message name="IDS_SIDEBAR_BRAVE_TALK_ITEM_TITLE" desc="Title for brave together item in sidebar">
+        <message name="IDS_SIDEBAR_BRAVE_TALK_ITEM_TITLE" desc="Title for Brave Talk item in sidebar">
           Brave Talk
         </message>
         <message name="IDS_SIDEBAR_WALLET_ITEM_TITLE" desc="Title for crypto wallet item in sidebar">
@@ -487,8 +486,8 @@
       <message name="IDS_BRAVE_REWARDS_LOCAL_TOS_AND_PP" desc="">By turning on [[title]], you agree to the <ph name="BEGIN_LINK1">$1</ph>Terms of Service<ph name="END_LINK1">$2</ph> and <ph name="BEGIN_LINK2">$3</ph>Privacy Policy<ph name="END_LINK2">$4</ph>.</message>
       <message name="IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_CLOSE" desc="">Close</message>
       <message name="IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_ERROR_WALLET" desc="">Error creating Brave Browser BAT card</message>
-      <message name="IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_BAT_LIMIT_TITLE" desc="">You need a verified wallet to Login</message>
-      <message name="IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_BAT_LIMIT_TEXT" desc="">You need a minimum of <ph name="AMOUNT">$1<ex>15</ex></ph> BAT to create an Uphold wallet. Please try again after you have verified your wallet with Uphold.</message>
+      <message name="IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_KYC_REQUIRED_TITLE" desc="">You need a verified wallet to log in</message>
+      <message name="IDS_BRAVE_REWARDS_LOCAL_REDIRECT_MODAL_KYC_REQUIRED_TEXT" desc="">Please try again after you have completed ID verification on <ph name="CUSTODIAN">$1<ex>Uphold</ex></ph>.</message>
       <message name="IDS_BRAVE_REWARDS_PENDING_REWARDS_MESSAGE" desc=""><ph name="AMOUNT">$1<ex>+1.5 BAT</ex></ph> arriving in <ph name="DAYS">$2<ex>4 days</ex></ph></message>
 
       <message name="IDS_BRAVE_REWARDS_CONNECT_WALLET_CHOOSE_HEADER" desc="">Choose a wallet service</message>
@@ -529,6 +528,8 @@
       <message name="IDS_BRAVE_REWARDS_INTERNALS_CONTRIBUTION_STEP_REWARDS_OFF" desc="">Rewards was turned off</message>
       <message name="IDS_BRAVE_REWARDS_INTERNALS_CONTRIBUTION_STEP_AUTO_CONTRIBUTE_OFF" desc="">Auto-contribute was turned off</message>
       <message name="IDS_BRAVE_REWARDS_INTERNALS_CONTRIBUTION_STEP_RETRY_COUNT" desc="">Stopped retrying</message>
+      <message name="IDS_BRAVE_REWARDS_INTERNALS_CUSTODIAN" desc="Custodian">Custodian:</message>
+      <message name="IDS_BRAVE_REWARDS_INTERNALS_CUSTODIAN_MEMBER_ID" desc="Custodian member ID">Custodian member ID:</message>
       <message name="IDS_BRAVE_REWARDS_INTERNALS_EVENT_LOG_KEY" desc="event log key">Key</message>
       <message name="IDS_BRAVE_REWARDS_INTERNALS_EVENT_LOG_VALUE" desc="event log value">Value</message>
       <message name="IDS_BRAVE_REWARDS_INTERNALS_EVENT_LOG_TIME" desc="when event was logged">Logged at</message>
@@ -637,7 +638,7 @@
       <message name="IDS_BRAVE_REWARDS_ONBOARDING_START_USING_REWARDS" desc="">Start using Brave Rewards</message>
       <message name="IDS_BRAVE_REWARDS_ONBOARDING_TAKE_TOUR" desc="">Take a quick tour</message>
       <message name="IDS_BRAVE_REWARDS_ONBOARDING_TERMS" desc="">By proceeding, you agree to the <ph name="TOS_LINK_BEGIN">$1</ph>Terms of Service<ph name="TOS_LINK_END">$2</ph> and <ph name="PP_LINK_BEGIN">$3</ph>Privacy Policy<ph name="PP_LINK_END">$4</ph>.</message>
-      <message name="IDS_BRAVE_REWARDS_ONBOARDING_TIP_HEADER" desc="">Tip with Brave rewards</message>
+      <message name="IDS_BRAVE_REWARDS_ONBOARDING_TIP_HEADER" desc="">Tip with Brave Rewards</message>
       <message name="IDS_BRAVE_REWARDS_ONBOARDING_TIP_TEXT" desc="">Earn Rewards by viewing Brave Private Ads and support content creators automatically</message>
       <message name="IDS_BRAVE_REWARDS_ONBOARDING_TOUR_BACK" desc="">Go Back</message>
       <message name="IDS_BRAVE_REWARDS_ONBOARDING_TOUR_BEGIN" desc="">Let’s take a quick tour</message>
@@ -1013,7 +1014,7 @@
       <message name="IDS_EDIT_CARDS_TITLE" desc="">Edit Cards</message>
       <message name="IDS_REWARDS_WIDGET_TOS_AND_PP" desc="">By clicking [[title]], you agree to the <ph name="BEGIN_LINK1">$1</ph>Terms of Service<ph name="END_LINK1">$2</ph> and <ph name="BEGIN_LINK2">$3</ph>Privacy Policy<ph name="END_LINK2">$4</ph>.</message>
       <message name="IDS_REWARDS_WIDGET_START_USING" desc="">Start using Brave Rewards</message>
-      <message name="IDS_TOGETHER_WIDGET_TITLE" desc="">Brave Together</message>
+      <message name="IDS_TOGETHER_WIDGET_TITLE" desc="">Brave Talk</message>
       <message name="IDS_TOGETHER_WIDGET_WELCOME_TITLE" desc="">Start a private video call with your friends and colleagues.</message>
       <message name="IDS_TOGETHER_WIDGET_START_BUTTON" desc="">Start video call</message>
       <message name="IDS_TOGETHER_WIDGET_ABOUT_DATA" desc="">About your data</message>

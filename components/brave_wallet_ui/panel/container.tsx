@@ -7,15 +7,30 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch } from 'redux'
 import { ConnectWithSite, ConnectedPanel, Panel, WelcomePanel } from '../components/extension'
+import { Send, SelectAsset, SelectAccount, SelectNetwork } from '../components/buy-send-swap/'
 import { AppList } from '../components/shared'
 import { filterAppList } from '../utils/filter-app-list'
-import { ScrollContainer, StyledExtensionWrapper } from '../stories/style'
+import { ScrollContainer, StyledExtensionWrapper, SelectContainer } from '../stories/style'
+import { SendWrapper } from './style'
 import store from './store'
 import * as WalletPanelActions from './actions/wallet_panel_actions'
 import * as WalletActions from '../common/actions/wallet_actions'
-import { AppObjectType, AppsListType, WalletState, PanelState, PanelTypes, WalletPanelState, WalletAccountType } from '../constants/types'
+import {
+  AppObjectType,
+  AppsListType,
+  WalletState,
+  PanelState,
+  PanelTypes,
+  WalletPanelState,
+  WalletAccountType,
+  BuySendSwapViewTypes,
+  AssetOptionType,
+  NetworkOptionsType
+} from '../constants/types'
 import { AppsList } from '../options/apps-list-options'
 import LockPanel from '../components/extension/lock-panel'
+import { AssetOptions } from '../options/asset-options'
+import { NetworkOptions } from '../options/network-options'
 
 type Props = {
   panel: PanelState
@@ -39,6 +54,19 @@ function mapDispatchToProps (dispatch: Dispatch): Partial<Props> {
 }
 
 function Container (props: Props) {
+  const {
+    accounts,
+    selectedAccount,
+    selectedNetwork,
+    isWalletLocked,
+    favoriteApps,
+    hasIncorrectPassword,
+    hasInitialized,
+    isWalletCreated
+  } = props.wallet
+
+  const { connectedSiteOrigin, panelTitle, selectedPanel } = props.panel
+
   // TODO(petemill): If initial data or UI takes a noticeable amount of time to arrive
   // consider rendering a "loading" indicator when `hasInitialized === false`, and
   // also using `React.lazy` to put all the main UI in a separate JS bundle and display
@@ -46,6 +74,45 @@ function Container (props: Props) {
   const [selectedAccounts, setSelectedAccounts] = React.useState<WalletAccountType[]>([])
   const [filteredAppsList, setFilteredAppsList] = React.useState<AppsListType[]>(AppsList)
   const [walletConnected, setWalletConnected] = React.useState<boolean>(true)
+  const [selectedAsset, setSelectedAsset] = React.useState<AssetOptionType>(AssetOptions[0])
+  const [showSelectAsset, setShowSelectAsset] = React.useState<boolean>(false)
+  const [toAddress, setToAddress] = React.useState('')
+  const [sendAmount, setSendAmount] = React.useState('')
+
+  const onChangeSendView = (view: BuySendSwapViewTypes) => {
+    if (view === 'assets') {
+      setShowSelectAsset(true)
+    }
+  }
+
+  const onHideSelectAsset = () => {
+    setShowSelectAsset(false)
+  }
+
+  const onSelectAsset = (asset: AssetOptionType) => () => {
+    setSelectedAsset(asset)
+    setShowSelectAsset(false)
+  }
+
+  const onInputChange = (value: string, name: string) => {
+    if (name === 'address') {
+      setToAddress(value)
+    } else {
+      setSendAmount(value)
+    }
+  }
+
+  const onSelectPresetAmount = (percent: number) => {
+    // 0 Will be replaced with selected from asset's Balance
+    // once we are able to get balances
+    const amount = 0 * percent
+    setSendAmount(amount.toString())
+  }
+
+  const onSubmitSend = () => {
+    // Logic here to submit send transaction
+  }
+
   const toggleConnected = () => {
     setWalletConnected(!walletConnected)
   }
@@ -65,7 +132,7 @@ function Container (props: Props) {
   const onSubmit = () => {
     props.walletPanelActions.connectToSite({
       selectedAccounts,
-      siteToConnectTo: props.panel.connectedSiteOrigin
+      siteToConnectTo: connectedSiteOrigin
     })
   }
   const primaryAction = () => {
@@ -88,7 +155,7 @@ function Container (props: Props) {
   }
   const handlePasswordChanged = (value: string) => {
     setInputValue(value)
-    if (props.wallet.hasIncorrectPassword) {
+    if (hasIncorrectPassword) {
       props.walletActions.hasIncorrectPassword(false)
     }
   }
@@ -102,11 +169,11 @@ function Container (props: Props) {
     props.walletActions.addFavoriteApp(app)
   }
 
-  const navigateTo = (selectedPanel: PanelTypes) => {
-    if (selectedPanel === 'expanded') {
+  const navigateTo = (path: PanelTypes) => {
+    if (path === 'expanded') {
       props.walletPanelActions.expandWallet()
     } else {
-      props.walletPanelActions.navigateTo(selectedPanel)
+      props.walletPanelActions.navigateTo(path)
     }
   }
 
@@ -122,42 +189,93 @@ function Container (props: Props) {
     filterAppList(event, AppsList, setFilteredAppsList)
   }
 
-  if (!props.wallet.hasInitialized || !props.wallet.accounts) {
+  const onSelectAccount = (account: WalletAccountType) => () => {
+    props.walletActions.selectAccount(account)
+    props.walletPanelActions.navigateTo('main')
+  }
+
+  const onSelectNetwork = (network: NetworkOptionsType) => () => {
+    props.walletActions.selectNetwork(network)
+    props.walletPanelActions.navigateTo('main')
+  }
+
+  const onReturnToMain = () => {
+    props.walletPanelActions.navigateTo('main')
+  }
+
+  if (!hasInitialized || !accounts) {
     return null
   }
 
-  if (!props.wallet.isWalletCreated) {
+  if (!isWalletCreated) {
     return (
       <StyledExtensionWrapper>
         <WelcomePanel onRestore={onRestore} onSetup={onSetup} />
       </StyledExtensionWrapper>)
   }
 
-  if (props.wallet.isWalletLocked) {
+  if (isWalletLocked) {
     return (
       <StyledExtensionWrapper>
         <LockPanel
-          hasPasswordError={props.wallet.hasIncorrectPassword}
+          hasPasswordError={hasIncorrectPassword}
           onSubmit={unlockWallet}
           disabled={inputValue === ''}
           onPasswordChanged={handlePasswordChanged}
         />
-      </StyledExtensionWrapper>)
+      </StyledExtensionWrapper>
+    )
   }
 
-  if (props.panel.selectedPanel === 'apps') {
+  if (showSelectAsset) {
+    return (
+      <SelectContainer>
+        <SelectAsset
+          assets={AssetOptions}
+          onSelectAsset={onSelectAsset}
+          onBack={onHideSelectAsset}
+        />
+      </SelectContainer>
+    )
+  }
+
+  if (selectedPanel === 'networks') {
+    return (
+      <SelectContainer>
+        <SelectNetwork
+          networks={NetworkOptions}
+          onBack={onReturnToMain}
+          onSelectNetwork={onSelectNetwork}
+        />
+      </SelectContainer>
+    )
+  }
+
+  if (selectedPanel === 'accounts') {
+    return (
+      <SelectContainer>
+        <SelectAccount
+          accounts={accounts}
+          onBack={onReturnToMain}
+          onSelectAccount={onSelectAccount}
+        />
+      </SelectContainer>
+    )
+  }
+
+  if (selectedPanel === 'apps') {
     return (
       <StyledExtensionWrapper>
         <Panel
           navAction={navigateTo}
-          title={props.panel.panelTitle}
-          useSearch={props.panel.selectedPanel === 'apps'}
-          searchAction={props.panel.selectedPanel === 'apps' ? filterList : undefined}
+          title={panelTitle}
+          useSearch={selectedPanel === 'apps'}
+          searchAction={selectedPanel === 'apps' ? filterList : undefined}
         >
           <ScrollContainer>
             <AppList
               list={filteredAppsList}
-              favApps={props.wallet.favoriteApps}
+              favApps={favoriteApps}
               addToFav={addToFavorites}
               removeFromFav={removeFromFavorites}
               action={browseMore}
@@ -167,13 +285,13 @@ function Container (props: Props) {
       </StyledExtensionWrapper>)
   }
 
-  if (props.panel.selectedPanel === 'connectWithSite') {
+  if (selectedPanel === 'connectWithSite') {
     return (
       <StyledExtensionWrapper>
         <ConnectWithSite
-          siteURL={props.panel.connectedSiteOrigin}
+          siteURL={connectedSiteOrigin}
           isReady={readyToConnect}
-          accounts={props.wallet.accounts}
+          accounts={accounts}
           primaryAction={primaryAction}
           secondaryAction={secondaryAction}
           selectAccount={selectAccount}
@@ -183,10 +301,35 @@ function Container (props: Props) {
       </StyledExtensionWrapper>)
   }
 
+  if (selectedPanel === 'send') {
+    return (
+      <StyledExtensionWrapper>
+        <Panel
+          navAction={navigateTo}
+          title={panelTitle}
+          useSearch={false}
+        >
+          <SendWrapper>
+            <Send
+              onChangeSendView={onChangeSendView}
+              onInputChange={onInputChange}
+              onSelectPresetAmount={onSelectPresetAmount}
+              onSubmit={onSubmitSend}
+              selectedAsset={selectedAsset}
+              selectedAssetAmount={sendAmount}
+              selectedAssetBalance='0'
+              toAddress={toAddress}
+            />
+          </SendWrapper>
+        </Panel>
+      </StyledExtensionWrapper>)
+  }
+
   return (
     <>
       <ConnectedPanel
-        selectedAccount={props.wallet.accounts[0]}
+        selectedAccount={selectedAccount}
+        selectedNetwork={selectedNetwork}
         isConnected={walletConnected}
         connectAction={toggleConnected}
         navAction={navigateTo}

@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="16dp"
-    android:layout_marginBottom="16dp"
+    android:background="@color/wallet_bg"
     android:fillViewport="true">
 
     <LinearLayout
@@ -12,44 +11,54 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/wallet_toolbar_bg_color"
+            android:translationZ="10dp"
             android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/asset_title_text"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:gravity="center_vertical"
-                app:drawableStartCompat="@drawable/ic_eth"
-                android:drawablePadding="12dp"
-                android:layout_marginEnd="20dp"/>
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/asset_network_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:gravity="center_vertical"
-                android:text="@string/mainnet"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                android:background="@drawable/rounded_white_holo_bg"
-                app:drawableEndCompat="@drawable/ic_circle_down"
-                android:drawablePadding="8dp"
-                android:layout_marginEnd="20dp"/>
+                <TextView
+                    android:id="@+id/asset_title_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:textColor="@color/wallet_text_color"
+                    android:gravity="center_vertical"
+                    app:drawableStartCompat="@drawable/ic_eth"
+                    android:drawablePadding="12dp"
+                    android:layout_marginEnd="20dp"/>
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/asset_network_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:gravity="center_vertical"
+                    android:text="@string/mainnet"
+                    android:textColor="@color/wallet_text_color"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/rounded_white_holo_bg"
+                    app:drawableEndCompat="@drawable/ic_circle_down"
+                    android:drawablePadding="8dp"
+                    android:layout_marginEnd="20dp"/>
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
 
         <TextView
             android:id="@+id/asset_price_text"
@@ -59,7 +68,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:text="@string/eth_price"
-            android:textColor="#84889C"/>
+            android:textColor="@color/wallet_secondary_text_color"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -79,14 +88,13 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:text="0.03265 BTC"
-            android:textColor="#84889C"/>
+            android:textColor="@color/wallet_secondary_text_color"/>
 
         <org.chromium.chrome.browser.crypto_wallet.util.SmoothLineChartEquallySpaced
             android:layout_marginTop="32dp"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:id="@+id/line_chart"
-            android:background="@android:color/white" />
+            android:id="@+id/line_chart" />
 
             <RadioGroup
                 android:id="@+id/asset_duration_radio_group"

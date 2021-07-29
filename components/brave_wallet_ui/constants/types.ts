@@ -61,9 +61,11 @@ export type PanelTypes =
   | 'send'
   | 'swap'
   | 'apps'
+  | 'accounts'
   | 'networks'
   | 'settings'
   | 'expanded'
+  | 'assets'
 
 export type NavTypes =
   | 'crypto'
@@ -97,12 +99,6 @@ export type ChartTimelineType =
   | '3Months'
   | '1Year'
   | 'AllTime'
-
-export interface AssetPriceReturnInfo {
-  usd: string
-  btc: number
-  change24Hour: number
-}
 
 export interface BuySendSwapObjectType {
   name: string
@@ -151,6 +147,8 @@ export interface WalletState {
   favoriteApps: AppObjectType[]
   isWalletBackedUp: boolean
   hasIncorrectPassword: boolean
+  selectedAccount: WalletAccountType
+  selectedNetwork: NetworkOptionsType
   accounts: WalletAccountType[]
   walletAccountNames: string[]
   transactions: RPCTransactionType[]
@@ -170,7 +168,8 @@ export interface PageState {
   invalidMnemonic: boolean
   selectedTimeline: AssetPriceTimeframe
   selectedAsset: AssetOptionType | undefined
-  selectedAssetPrice: AssetPriceReturnInfo | undefined
+  selectedBTCAssetPrice: AssetPriceInfo | undefined
+  selectedUSDAssetPrice: AssetPriceInfo | undefined
   selectedAssetPriceHistory: GetAssetPriceHistoryReturnInfo[]
   portfolioPriceHistory: PriceDataObjectType[]
   userAssets: string[]
@@ -248,13 +247,20 @@ export interface SwapResponseReturnInfo {
   response: SwapResponse
 }
 
+export interface AssetPriceInfo {
+  fromAsset: string
+  toAsset: string
+  price: string
+  asset24hChange: string
+}
+
 export interface GetAssetPriceReturnInfo {
   success: boolean,
-  price: string
+  values: AssetPriceInfo[]
 }
 
 export interface GetAssetPriceHistoryReturnInfo {
-  price: string,
+  price: string
   date: MojoTime
 }
 
@@ -271,12 +277,34 @@ export interface AddAccountToWalletReturnInfo {
   success: boolean
 }
 
+export interface TokenInfo {
+  contractAddress: string
+  name: string
+  isErc20: boolean
+  isErc721: boolean
+  symbol: string
+  decimals: number
+}
+
+export interface GetTokenByContractReturnInfo {
+  value: TokenInfo | undefined
+}
+export interface GetTokenBySymbolReturnInfo {
+  token: TokenInfo | undefined
+}
+export interface GetAllTokensReturnInfo {
+  tokens: TokenInfo[]
+}
+
 export interface WalletAPIHandler {
   getWalletInfo: () => Promise<WalletInfo>
   lockWallet: () => Promise<void>
   addAccountToWallet: () => Promise<AddAccountToWalletReturnInfo>
   unlockWallet: (password: string) => Promise<UnlockWalletReturnInfo>
-  getAssetPrice: (asset: string) => Promise<GetAssetPriceReturnInfo>
+  getTokenByContract: (contract: string) => Promise<GetTokenByContractReturnInfo>
+  getTokenBySymbol: (symbol: string) => Promise<GetTokenBySymbolReturnInfo>
+  getAllTokens: () => Promise<GetAllTokensReturnInfo>
+  getAssetPrice: (fromAssets: string[], toAssets: string[]) => Promise<GetAssetPriceReturnInfo>
   getAssetPriceHistory: (asset: string, timeframe: AssetPriceTimeframe) => Promise<GetAssetPriceHistoryReturnObjectInfo>
   addFavoriteApp: (appItem: AppObjectType) => Promise<void>
   removeFavoriteApp: (appItem: AppObjectType) => Promise<void>

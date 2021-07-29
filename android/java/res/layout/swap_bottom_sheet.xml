@@ -4,9 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:ignore="RtlSymmetry"
+    android:background="@color/wallet_bg"
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/buy_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
@@ -20,6 +22,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp"
             android:paddingStart="24dp"
+            android:textColor="@color/wallet_text_color"
             android:text="@string/buy"
             android:textSize="16sp" />
 
@@ -28,18 +31,20 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:paddingStart="24dp"
+            android:textColor="@color/wallet_secondary_layout_text_color"
             android:text="@string/buy_swap_text"
             android:textSize="14sp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:paddingStart="24dp"
-            android:background="@android:color/darker_gray"/>
+            android:layout_marginStart="24dp"
+            android:background="@color/wallet_edittext_outline_color"/>
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/send_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
@@ -53,6 +58,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp"
             android:paddingStart="24dp"
+            android:textColor="@color/wallet_text_color"
             android:text="@string/send"
             android:textSize="16sp" />
 
@@ -62,17 +68,19 @@
             android:layout_marginBottom="16dp"
             android:paddingStart="24dp"
             android:text="@string/send_swap_text"
+            android:textColor="@color/wallet_secondary_layout_text_color"
             android:textSize="14sp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:paddingStart="24dp"
-            android:background="@android:color/darker_gray" />
+            android:layout_marginStart="24dp"
+            android:background="@color/wallet_edittext_outline_color" />
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/swap_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
@@ -86,6 +94,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp"
             android:paddingStart="24dp"
+            android:textColor="@color/wallet_text_color"
             android:text="@string/swap"
             android:textSize="16sp" />
 
@@ -94,6 +103,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:paddingStart="24dp"
+            android:textColor="@color/wallet_secondary_layout_text_color"
             android:text="@string/swap_text"
             android:textSize="14sp" />
 

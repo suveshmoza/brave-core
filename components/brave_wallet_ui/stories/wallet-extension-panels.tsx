@@ -1,16 +1,38 @@
 import * as React from 'react'
 
 // Components
-import { ConnectWithSite, ConnectedPanel, Panel, WelcomePanel } from '../components/extension'
+import {
+  ConnectWithSite,
+  ConnectedPanel,
+  Panel,
+  WelcomePanel
+} from '../components/extension'
 import { AppList } from '../components/shared'
-import { WalletAccountType, PanelTypes, AppObjectType, AppsListType } from '../constants/types'
+import {
+  Send,
+  SelectAsset,
+  SelectNetwork,
+  SelectAccount
+} from '../components/buy-send-swap'
+import {
+  WalletAccountType,
+  PanelTypes,
+  AppObjectType,
+  AppsListType,
+  AssetOptionType,
+  BuySendSwapViewTypes,
+  NetworkOptionsType
+} from '../constants/types'
 import { AppsList } from '../options/apps-list-options'
+import { NetworkOptions } from '../options/network-options'
 import { filterAppList } from '../utils/filter-app-list'
 import LockPanel from '../components/extension/lock-panel'
 import {
   StyledExtensionWrapper,
-  ScrollContainer
+  ScrollContainer,
+  SelectContainer
 } from './style'
+import { AssetOptions } from '../options/asset-options'
 
 export default {
   title: 'Wallet/Extension/Panels',
@@ -111,7 +133,7 @@ export const _ConnectedPanel = (args: { locked: boolean }) => {
   const [walletLocked, setWalletLocked] = React.useState<boolean>(locked)
   const [selectedPanel, setSelectedPanel] = React.useState<PanelTypes>('main')
   const [panelTitle, setPanelTitle] = React.useState<string>('main')
-  const [selectedAccount] = React.useState<WalletAccountType>(
+  const [selectedAccount, setSelectedAccount] = React.useState<WalletAccountType>(
     accounts[0]
   )
   const [favoriteApps, setFavoriteApps] = React.useState<AppObjectType[]>([
@@ -120,6 +142,49 @@ export const _ConnectedPanel = (args: { locked: boolean }) => {
   const [filteredAppsList, setFilteredAppsList] = React.useState<AppsListType[]>(AppsList)
   const [walletConnected, setWalletConnected] = React.useState<boolean>(true)
   const [hasPasswordError, setHasPasswordError] = React.useState<boolean>(false)
+  const [selectedNetwork, setSelectedNetwork] = React.useState<NetworkOptionsType>(NetworkOptions[0])
+  const [selectedAsset, setSelectedAsset] = React.useState<AssetOptionType>(AssetOptions[0])
+  const [showSelectAsset, setShowSelectAsset] = React.useState<boolean>(false)
+  const [toAddress, setToAddress] = React.useState('')
+  const [fromAmount, setFromAmount] = React.useState('')
+
+  const onChangeSendView = (view: BuySendSwapViewTypes) => {
+    if (view === 'assets') {
+      setShowSelectAsset(true)
+    }
+  }
+
+  const onBack = () => {
+    setSelectedPanel('main')
+  }
+
+  const onSelectNetwork = (network: NetworkOptionsType) => () => {
+    setSelectedNetwork(network)
+    setSelectedPanel('main')
+  }
+
+  const onSelectAccount = (account: WalletAccountType) => () => {
+    setSelectedAccount(account)
+    setSelectedPanel('main')
+  }
+
+  const onHideSelectAsset = () => {
+    setShowSelectAsset(false)
+  }
+
+  const onSelectAsset = (asset: AssetOptionType) => () => {
+    setSelectedAsset(asset)
+    setShowSelectAsset(false)
+  }
+
+  const onInputChange = (value: string, name: string) => {
+    if (name === 'address') {
+      setToAddress(value)
+    } else {
+      setFromAmount(value)
+    }
+  }
+
   const toggleConnected = () => {
     setWalletConnected(!walletConnected)
   }
@@ -168,9 +233,18 @@ export const _ConnectedPanel = (args: { locked: boolean }) => {
     }
   }
 
+  const onSelectPresetAmount = (percent: number) => {
+    const amount = Number(selectedAccount.balance) * percent
+    setFromAmount(amount.toString())
+  }
+
   const handlePasswordChanged = (value: string) => {
     setHasPasswordError(false)
     setInputValue(value)
+  }
+
+  const onSubmitSend = () => {
+    alert('Will submit Send')
   }
 
   return (
@@ -186,30 +260,74 @@ export const _ConnectedPanel = (args: { locked: boolean }) => {
         <>
           {selectedPanel === 'main' ? (
             <ConnectedPanel
+              selectedNetwork={selectedNetwork}
               selectedAccount={selectedAccount}
               isConnected={walletConnected}
               connectAction={toggleConnected}
               navAction={navigateTo}
             />
           ) : (
-            <Panel
-              navAction={navigateTo}
-              title={panelTitle}
-              useSearch={selectedPanel === 'apps'}
-              searchAction={selectedPanel === 'apps' ? filterList : undefined}
-            >
-              {selectedPanel === 'apps' &&
-                <ScrollContainer>
-                  <AppList
-                    list={filteredAppsList}
-                    favApps={favoriteApps}
-                    addToFav={addToFavorites}
-                    removeFromFav={removeFromFavorites}
-                    action={browseMore}
+            <>
+              {showSelectAsset &&
+                <SelectContainer>
+                  <SelectAsset
+                    assets={AssetOptions}
+                    onSelectAsset={onSelectAsset}
+                    onBack={onHideSelectAsset}
                   />
-                </ScrollContainer>
+                </SelectContainer>
               }
-            </Panel>
+              {selectedPanel === 'accounts' &&
+                <SelectContainer>
+                  <SelectAccount
+                    accounts={accounts}
+                    onBack={onBack}
+                    onSelectAccount={onSelectAccount}
+                  />
+                </SelectContainer>
+              }
+              {selectedPanel === 'networks' &&
+                <SelectContainer>
+                  <SelectNetwork
+                    networks={NetworkOptions}
+                    onBack={onBack}
+                    onSelectNetwork={onSelectNetwork}
+                  />
+                </SelectContainer>
+              }
+              {!showSelectAsset && selectedPanel !== 'networks' && selectedPanel !== 'accounts' &&
+                <Panel
+                  navAction={navigateTo}
+                  title={panelTitle}
+                  useSearch={selectedPanel === 'apps'}
+                  searchAction={selectedPanel === 'apps' ? filterList : undefined}
+                >
+                  <ScrollContainer>
+                    {selectedPanel === 'apps' &&
+                      <AppList
+                        list={filteredAppsList}
+                        favApps={favoriteApps}
+                        addToFav={addToFavorites}
+                        removeFromFav={removeFromFavorites}
+                        action={browseMore}
+                      />
+                    }
+                    {selectedPanel === 'send' &&
+                      <Send
+                        onChangeSendView={onChangeSendView}
+                        onInputChange={onInputChange}
+                        onSelectPresetAmount={onSelectPresetAmount}
+                        onSubmit={onSubmitSend}
+                        selectedAsset={selectedAsset}
+                        selectedAssetAmount={fromAmount}
+                        selectedAssetBalance={selectedAccount.balance.toString()}
+                        toAddress={toAddress}
+                      />
+                    }
+                  </ScrollContainer>
+                </Panel>
+              }
+            </>
           )}
         </>
       )}

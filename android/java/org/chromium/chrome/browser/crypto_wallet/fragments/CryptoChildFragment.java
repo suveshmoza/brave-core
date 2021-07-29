@@ -5,8 +5,10 @@
 
 package org.chromium.chrome.browser.crypto_wallet.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -35,7 +37,28 @@ public class CryptoChildFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_crypto_child, container, false);
+        View view = inflater.inflate(R.layout.fragment_crypto_child, container, false);
+
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            @SuppressLint("ClickableViewAccessibility")
+            public boolean onTouch(View v, MotionEvent event) {
+                SmoothLineChartEquallySpaced chartES = view.findViewById(R.id.line_chart);
+                if (chartES == null) {
+                    return true;
+                }
+                if (event.getAction() == MotionEvent.ACTION_MOVE
+                        || event.getAction() == MotionEvent.ACTION_DOWN) {
+                    chartES.drawLine(event.getRawX());
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    chartES.drawLine(-1);
+                }
+
+                return true;
+            }
+        });
+
+        return view;
     }
 
     @Override
