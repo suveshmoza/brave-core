@@ -6,7 +6,6 @@
 #ifndef BRAVE_COMPONENTS_SPEEDREADER_RENDERER_SPEEDREADER_JS_HANDLER_H_
 #define BRAVE_COMPONENTS_SPEEDREADER_RENDERER_SPEEDREADER_JS_HANDLER_H_
 
-#include "brave/components/speedreader/common/speedreader_ui_prefs.mojom-shared.h"
 #include "brave/components/speedreader/common/speedreader_ui_prefs.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -25,7 +24,7 @@ class SpeedreaderJSHandler {
   void AddJavaScriptObjectToFrame(v8::Local<v8::Context> context);
 
  private:
-  v8::Local<v8::Object> CreateSpeedreaderObject(
+  void CreateSpeedreaderObject(
       v8::Isolate* isolate,
       v8::Local<v8::Context> context);
 
@@ -38,6 +37,10 @@ class SpeedreaderJSHandler {
                             v8::Local<v8::Object> javascript_object,
                             const std::string& name,
                             const base::RepeatingCallback<Sig>& callback);
+
+  void EnsureConnected();
+
+  void SetFontScale(float scale);
 
   content::RenderFrame* render_frame_;
   mojo::Remote<mojom::SpeedreaderUIPrefs> speedreader_ui_prefs_;

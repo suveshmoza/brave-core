@@ -23,6 +23,8 @@ source_set("renderer") {
 
   if (enable_speedreader) {
     deps += [
+      "//brave/components/speedreader",
+      "//brave/components/speedreader:buildflags",
       "//brave/components/speedreader/renderer",
     ]
   }

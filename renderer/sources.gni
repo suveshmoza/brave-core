@@ -4,7 +4,6 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import("//brave/components/brave_wallet/common/buildflags/buildflags.gni")
-import("//brave/components/speedreader/buildflags.gni")
 
 brave_chrome_renderer_sources = [
   "//brave/renderer/brave_content_renderer_client.cc",
@@ -18,14 +17,13 @@ brave_chrome_renderer_public_deps = [
   "//brave/components/brave_wallet/common/buildflags",
   "//brave/components/content_settings/renderer",
   "//brave/components/cosmetic_filters/renderer",
+  # HELP: We can't import the speedreader buildflags.gni without creating an
+  # import loop.
+  "//brave/components/speedreader/renderer", # TODO: fuck
   "//mojo/public/cpp/bindings",
   "//third_party/blink/public:blink",
   "//third_party/blink/public/common",
 ]
-
-if (enable_speedreader) {
-  deps += [ "//brave/components/speedreader/renderer" ]
-}
 
 if (brave_wallet_enabled) {
   brave_chrome_renderer_public_deps += [
