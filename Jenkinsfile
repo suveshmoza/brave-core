@@ -101,8 +101,7 @@ pipeline {
                                                 github('brave/devops', 'https')
                                             }
                                             // FIXME: branch('${params.DEVOPS_BRANCH}')
-                                            branch('mplesa-jenkins-utils-lib-fixes')
-                                            // branch('chromium-brave-core')
+                                            branch('chromium-brave-core')
                                         }
                                     }
                                     scriptPath("jenkins/jobs/browser/pr-brave-browser-${PLATFORM}.Jenkinsfile")
