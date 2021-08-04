@@ -333,7 +333,7 @@ void SpeedReaderURLLoader::CompleteSending() {
       //
       // TODO(iefremov): Is it okay to rely on just this, or should the distill
       // thread also return a boolean indicating an error?
-      throttle_->OnDistillComplete(true);
+      throttle_->OnDistillComplete();
     }
   }
 
