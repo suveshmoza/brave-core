@@ -25,6 +25,68 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
+VpnLoginStatusDelegate::VpnLoginStatusDelegate() = default;
+VpnLoginStatusDelegate::~VpnLoginStatusDelegate() = default;
+
+void VpnLoginStatusDelegate::UpdateTargetURL(content::WebContents* source,
+    const GURL& url) {
+  LOG(ERROR) << "BSC]] UpdateTargetURL\nurl=" << url;
+}
+
+constexpr int kVpnLoginStatusIsolatedWorldId =
+    content::ISOLATED_WORLD_ID_CONTENT_END + 1;
+
+void VpnLoginStatusDelegate::LoadingStateChanged(content::WebContents* source,
+                                                 bool to_different_document) {
+  LOG(ERROR) << "BSC]] LoadingStateChanged\nto_different_document="
+             << to_different_document << "\nIsLoading=" << source->IsLoading();
+
+  if (!source->IsLoading()) {
+    auto* main_frame = source->GetMainFrame();
+
+    // https://github.com/brave/account-brave-com/blob/dev/static/js/skus.js
+    const char16_t kRegisterSkuListener[] = uR"(
+window.addEventListener("message", (event) => {
+  if (event.origin !== "https://account.brave.software"){
+    console.log('BSC]] bad origin; peacing out', event.origin);
+    return;
+  }
+  if (event.type === 'credentials_presentation') {
+    console.log('BSC]]', "credentials presented!");
+  } else if (event.type == 'credential_summary') {
+    console.log('BSC]]', "credentials summarized!");
+  } else {
+    console.log('BSC]] got message:', JSON.stringify(event));
+  }
+}, false);)";
+
+    const char16_t kSendPostMsgScript[] =
+        u"window.postMessage({type: 'get_credential_summary'}, '*')";
+
+    std::u16string script1(kRegisterSkuListener);
+    std::u16string script2(kSendPostMsgScript);
+    main_frame->ExecuteJavaScriptInIsolatedWorld(
+        script1, {}, kVpnLoginStatusIsolatedWorldId);
+    LOG(ERROR) << "BSC]] main_frame->ExecuteJavaScriptInIsolatedWorld(script1)";
+
+    // TODO: chain these if needed (ex: wait for first to finish)
+    // I have no idea if these calls are blocking
+    main_frame->ExecuteJavaScriptInIsolatedWorld(
+        script2, {}, kVpnLoginStatusIsolatedWorldId);
+    LOG(ERROR) << "BSC]] main_frame->ExecuteJavaScriptInIsolatedWorld(script2)";
+  }
+}
+
+bool VpnLoginStatusDelegate::DidAddMessageToConsole(
+      content::WebContents* source,
+      blink::mojom::ConsoleMessageLevel log_level,
+      const std::u16string& message,
+      int32_t line_no,
+      const std::u16string& source_id) {
+  LOG(ERROR) << "BSC]] DidAddMessageToConsole\nmessage=" << message;
+  return true;
+}
+
 namespace {
 
 constexpr int kButtonRadius = 47;
@@ -71,8 +133,17 @@ BraveVPNButton::BraveVPNButton(BraveVpnService* service)
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   UpdateButtonState();
-}
 
+  // USED TO CHECK IF THEY ARE LOGGED IN LOL
+  content::WebContents::CreateParams params(profile);
+  contents_ = content::WebContents::Create(params);
+  contents_delegate_.reset(new VpnLoginStatusDelegate);
+  contents_->SetDelegate(contents_delegate_.get());
+  if (contents_) {
+    LOG(ERROR) << "BSC]] CREATED WEB CONTENT";
+  }
+}
+// TODO(bsclifton): clean up contents
 BraveVPNButton::~BraveVPNButton() = default;
 
 void BraveVPNButton::OnConnectionStateChanged(bool connected) {
@@ -120,6 +191,14 @@ bool BraveVPNButton::IsConnected() {
 
 void BraveVPNButton::OnButtonPressed(const ui::Event& event) {
   ShowBraveVPNPanel();
+
+  if (contents_) {
+    contents_->GetController().LoadURL(
+      GURL("https://basicuser:basicpass@account.brave.software/skus/"),
+      content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      std::string());
+  }
 }
 
 void BraveVPNButton::ShowBraveVPNPanel() {
