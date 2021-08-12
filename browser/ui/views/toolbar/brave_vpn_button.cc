@@ -10,9 +10,11 @@
 
 #include "base/notreached.h"
 #include "brave/app/vector_icons/vector_icons.h"
+#include "brave/browser/brave_vpn/brave_vpn_service_factory.h"
 #include "brave/browser/themes/theme_properties.h"
 #include "brave/components/brave_vpn/brave_vpn_service.h"
 #include "brave/grit/brave_generated_resources.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -110,10 +112,10 @@ class BraveVPNButtonHighlightPathGenerator
 
 }  // namespace
 
-BraveVPNButton::BraveVPNButton(BraveVpnService* service)
+BraveVPNButton::BraveVPNButton(Profile* profile)
     : ToolbarButton(base::BindRepeating(&BraveVPNButton::OnButtonPressed,
                                         base::Unretained(this))),
-      service_(service) {
+      service_(BraveVpnServiceFactory::GetForProfile(profile)) {
   DCHECK(service_);
   observation_.Observe(service_);
 

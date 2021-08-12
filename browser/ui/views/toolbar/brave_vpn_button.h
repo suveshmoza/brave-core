@@ -36,7 +36,7 @@ class BraveVPNButton : public ToolbarButton, public BraveVpnService::Observer {
  public:
   METADATA_HEADER(BraveVPNButton);
 
-  explicit BraveVPNButton(BraveVpnService* service);
+  explicit BraveVPNButton(Profile* profile);
   ~BraveVPNButton() override;
 
   BraveVPNButton(const BraveVPNButton&) = delete;
