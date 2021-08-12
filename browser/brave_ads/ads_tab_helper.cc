@@ -22,6 +22,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
@@ -29,9 +30,10 @@ namespace brave_ads {
 
 AdsTabHelper::AdsTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
+      web_contents_(web_contents),
       tab_id_(sessions::SessionTabHelper::IdForTab(web_contents)),
       ads_service_(nullptr),
-      is_active_(false),
+      is_tab_active_(false),
       is_browser_active_(true),
       should_process_(false),
       weak_factory_(this) {
@@ -39,15 +41,15 @@ AdsTabHelper::AdsTabHelper(content::WebContents* web_contents)
     return;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  ads_service_ = AdsServiceFactory::GetForProfile(profile);
+  profile_ = Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  ads_service_ = AdsServiceFactory::GetForProfile(profile_);
 
 #if !defined(OS_ANDROID)
   BrowserList::AddObserver(this);
   OnBrowserSetLastActive(BrowserList::GetInstance()->GetLastActive());
 #endif
-  OnVisibilityChanged(web_contents->GetVisibility());
+
+  OnVisibilityChanged(web_contents_->GetVisibility());
 }
 
 AdsTabHelper::~AdsTabHelper() {
@@ -62,7 +64,7 @@ void AdsTabHelper::TabUpdated() {
   }
 
   ads_service_->OnTabUpdated(tab_id_, web_contents()->GetVisibleURL(),
-                             is_active_, is_browser_active_);
+                             is_tab_active_, is_browser_active_);
 }
 
 void AdsTabHelper::RunIsolatedJavaScript(
@@ -183,22 +185,22 @@ void AdsTabHelper::MediaStoppedPlaying(
 }
 
 void AdsTabHelper::OnVisibilityChanged(content::Visibility visibility) {
-  const bool old_is_active = is_active_;
+  const bool old_is_tab_active = is_tab_active_;
 
   switch (visibility) {
     case content::Visibility::HIDDEN:
     case content::Visibility::OCCLUDED: {
-      is_active_ = false;
+      is_tab_active_ = false;
       break;
     }
 
     case content::Visibility::VISIBLE: {
-      is_active_ = true;
+      is_tab_active_ = true;
       break;
     }
   }
 
-  if (old_is_active == is_active_) {
+  if (old_is_tab_active == is_tab_active_) {
     return;
   }
 
@@ -216,19 +218,63 @@ void AdsTabHelper::WebContentsDestroyed() {
 
 #if !defined(OS_ANDROID)
 // components/brave_ads/browser/background_helper_android.cc handles Android
-void AdsTabHelper::OnBrowserSetLastActive(Browser* browser) {
+void AdsTabHelper::MaybeTabUpdated(Browser* browser) {
   if (!browser) {
     return;
   }
 
-  const bool old_is_browser_active = is_browser_active_;
+  const bool is_browser_active = is_browser_active_;
+
+  is_browser_active_ = browser->window()->IsActive();
+  VLOG(0) << "FOOBAR.MaybeTabUpdated.is_browser_active_: "
+      << is_browser_active_;
+
+  bool is_visible = browser->window()->IsVisible();
+  VLOG(0) << "FOOBAR.MaybeTabUpdated.is_visible: "
+      << is_visible;
+
+  if (is_browser_active == is_browser_active_) {
+    return;
+  }
+
+  TabUpdated();
+}
+
+void AdsTabHelper::OnBrowserAdded(Browser* browser) {
+  VLOG(0) << "FOOBAR.OnBrowserAdded: " << browser->profile()->GetDebugName()
+      << " " << browser->profile()->GetBaseName();
+
+  // MaybeTabUpdated(browser);
+}
+
+void AdsTabHelper::OnBrowserRemoved(Browser* browser) {
+  VLOG(0) << "FOOBAR.OnBrowserRemoved: " << browser->profile()->GetDebugName()
+      << " " << browser->profile()->GetBaseName();
+
+  // MaybeTabUpdated(browser);
+}
+
+void AdsTabHelper::OnBrowserSetLastActive(Browser* browser) {
+  VLOG(0) << "FOOBAR.OnBrowserSetLastActive: "
+      << browser->profile()->GetDebugName();
+
+  if (!browser) {
+    return;
+  }
+
+  const bool is_browser_active = is_browser_active_;
 
   if (browser->tab_strip_model()->GetIndexOfWebContents(web_contents()) !=
       TabStripModel::kNoTab) {
     is_browser_active_ = true;
   }
 
-  if (old_is_browser_active == is_browser_active_) {
+  VLOG(0) << "FOOBAR.MaybeTabUpdated.is_browser_active_: "
+      << is_browser_active_;
+
+  VLOG(0) << "---------------------------------------------------------------";
+
+  if (is_browser_active == is_browser_active_) {
     return;
   }
 
@@ -236,16 +282,26 @@ void AdsTabHelper::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void AdsTabHelper::OnBrowserNoLongerActive(Browser* browser) {
-  DCHECK(browser);
+  VLOG(0) << "FOOBAR.OnBrowserNoLongerActive: "
+      << browser->profile()->GetDebugName();
 
-  const bool old_is_browser_active = is_browser_active_;
+  if (!browser) {
+    return;
+  }
+
+  const bool is_browser_active = is_browser_active_;
 
   if (browser->tab_strip_model()->GetIndexOfWebContents(web_contents()) !=
       TabStripModel::kNoTab) {
     is_browser_active_ = false;
   }
 
-  if (old_is_browser_active == is_browser_active_) {
+  VLOG(0) << "FOOBAR.MaybeTabUpdated.is_browser_active_: "
+      << is_browser_active_;
+
+  VLOG(0) << "---------------------------------------------------------------";
+
+  if (is_browser_active == is_browser_active_) {
     return;
   }
 

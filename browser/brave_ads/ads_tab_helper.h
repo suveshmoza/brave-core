@@ -80,14 +80,20 @@ class AdsTabHelper : public content::WebContentsObserver,
   void WebContentsDestroyed() override;
 
 #if !defined(OS_ANDROID)
+  void MaybeTabUpdated(Browser* browser);
+
   // BrowserListObserver overrides
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
 #endif
 
+  content::WebContents* web_contents_;
+  Profile* profile_ = nullptr;
   SessionID tab_id_;
   AdsService* ads_service_;  // NOT OWNED
-  bool is_active_;
+  bool is_tab_active_;
   bool is_browser_active_;
   std::vector<GURL> redirect_chain_;
   bool should_process_;
