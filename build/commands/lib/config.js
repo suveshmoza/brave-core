@@ -72,6 +72,7 @@ const Config = function () {
   this.isUniversalBinary = false
   this.scriptDir = path.join(this.rootDir, 'scripts')
   this.srcDir = path.join(this.rootDir, 'src')
+  this.npmCommand = npmCommand
   this.chromeVersion = this.getProjectVersion('chrome')
   this.chromiumRepo = getNPMConfig(['projects', 'chrome', 'repository', 'url'])
   this.braveCoreDir = path.join(this.srcDir, 'brave')

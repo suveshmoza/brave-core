@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true
+  },
   "extends": "../../../../tsconfig",
   "include": [
     "**/*.ts",

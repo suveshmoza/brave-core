@@ -23,7 +23,6 @@
   "background": {
     "scripts": [
        "modules/human-web/app.bundle.js",
-       "modules/human-web/dexie.min.js",
        "out/brave_extension_background.bundle.js"
     ],
     "persistent": true

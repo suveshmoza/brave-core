@@ -328,6 +328,7 @@
     "redux-thunk": "^2.3.0",
     "throttleit": "^1.0.0",
     "webext-redux": "^2.1.4",
-    "webtorrent": "^0.114.0"
+    "webtorrent": "^0.114.0",
+    "web-discovery-project": "brave/humanweb#v1.1.1"
   }
 }

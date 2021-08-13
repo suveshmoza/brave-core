@@ -28,6 +28,36 @@ const mergeWithDefault = (options) => {
   return Object.assign({}, config.defaultOptions, options)
 }
 
+const vendorWebDiscoveryExtension = () => {
+  const projectName = 'web-discovery-project'
+  const webDiscoveryGitUrl = 'git@github.com:brave/humanweb.git'
+  const packageJson = path.join(config.braveCoreDir, 'package.json')
+  const version = util.getPackageJsonDependencyVersion(packageJson, projectName)
+  if (!version) {
+    Log.error('Could not find web-discovery-project version')
+    process.exit(1)
+  }
+  const gitTag = 'v' + version
+
+  const braveExtensionPath = 'components/brave_extension/extension/brave_extension'
+  const braveExtensionDir = path.join(config.braveCoreDir, braveExtensionPath)
+  const webDiscoveryDir = path.join(braveExtensionDir, projectName)
+  if (fs.existsSync(webDiscoveryDir)) {
+    Log.progress(`Removing existing project at ${webDiscoveryDir}`)
+    fs.rmdirSync(webDiscoveryDir, { recursive: true })
+  }
+  Log.progress(`Cloning ${projectName} version ${version} to ${braveExtensionDir}`)
+  util.run('git', [
+    '-C', braveExtensionDir,
+    'clone',
+    '-b', gitTag, '--single-branch',
+    webDiscoveryGitUrl, projectName
+  ])
+  Log.progress(`Building ${projectName}`)
+  util.runNpm(webDiscoveryDir, ['install'])
+  util.runNpm(webDiscoveryDir, ['run', 'build-module'])
+}
+
 async function applyPatches() {
   const GitPatcher = require('./gitPatcher')
   Log.progress('Applying patches...')
@@ -101,6 +131,16 @@ const util = {
     }
   },
 
+  runNpm: (repoPath, npmArgs = []) => {
+    let prog = util.run(config.npmCommand, npmArgs, { cwd: repoPath })
+
+    if (prog.status !== 0) {
+      console.error(prog.stderr && prog.stderr.toString())
+      process.exit(1)
+    }
+    return prog.stdout.toString().trim()
+  },
+
   runAsync: (cmd, args = [], options = {}) => {
     let { continueOnFail, verbose, ...cmdOptions } = options
     if (verbose) {
@@ -140,6 +180,24 @@ const util = {
         resolve(stdout)
       })
     })
+  },
+
+  getPackageJsonDependencyVersion: (packageJsonFile, packageName) => {
+    let data
+    try {
+      data = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'))
+    } catch (err) {
+      console.error(`Unable to read and parse ${packageJsonFile}`)
+      return ''
+    }
+    const depString = data.dependencies[packageName]
+    if (depString)  {
+      const version = depString.match(/\d+\.\d+\.\d+$/)
+      if (version) {
+        return version[0]
+      }
+    }
+    return ''
   },
 
 
@@ -706,6 +764,10 @@ const util = {
 
   applyPatches: () => {
     return applyPatches()
+  },
+
+  vendorWebDiscoveryExtension: () => {
+    vendorWebDiscoveryExtension()
   },
 
   buildArgsToString: (buildArgs) => {
