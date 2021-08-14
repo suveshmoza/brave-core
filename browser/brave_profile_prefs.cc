@@ -373,8 +373,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       kBraveDefaultSearchVersion,
       TemplateURLPrepopulateData::kBraveCurrentDataVersion);
 
-  // humanweb, default false
-  registry->RegisterBooleanPref(kHumanWebEnabled, false);
+  // Web discovery extension, default false
+  registry->RegisterBooleanPref(kWebDiscoveryEnabled, false);
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
   speedreader::SpeedreaderService::RegisterProfilePrefs(registry);

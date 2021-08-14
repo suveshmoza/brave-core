@@ -75,8 +75,8 @@ extern const char kBinanceAccessToken[];
 extern const char kBinanceRefreshToken[];
 extern const char kDefaultBrowserPromptEnabled[];
 
-// Human Web
-extern const char kHumanWebEnabled[];
+// Web discovery project
+extern const char kWebDiscoveryEnabled[];
 
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 extern const char kBraveGCMChannelStatus[];

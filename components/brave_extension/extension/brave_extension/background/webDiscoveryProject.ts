@@ -11,23 +11,23 @@ if (App !== undefined) {
   });
 
   APP.start().then(() => {
-    const toggleHumanWeb = (enabled: boolean) => {
-      APP.prefs.set("modules.web-discovery-project.enabled", enabled)
-      APP.prefs.set("modules.hpnv2.enabled", enabled);
+    const toggleWebDiscoveryExtension = (enabled: boolean) => {
+      APP.prefs.set('modules.web-discovery-project.enabled', enabled)
+      APP.prefs.set('modules.hpnv2.enabled', enabled);
     }
 
-    const HUMAN_WEB_PREF_KEY = 'brave.human_web_enabled'
+    const WEB_DISCOVERY_PREF_KEY = 'brave.web_discovery_enabled'
 
     chrome.settingsPrivate.onPrefsChanged.addListener((prefs) => {
-      const pref = prefs.find(p => p.key === HUMAN_WEB_PREF_KEY)
+      const pref = prefs.find(p => p.key === WEB_DISCOVERY_PREF_KEY)
       if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
-        toggleHumanWeb(pref.value)
+        toggleWebDiscoveryExtension(pref.value)
       }
     })
 
-    chrome.settingsPrivate.getPref(HUMAN_WEB_PREF_KEY, (pref) => {
+    chrome.settingsPrivate.getPref(WEB_DISCOVERY_PREF_KEY, (pref) => {
       if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
-        toggleHumanWeb(pref.value)
+        toggleWebDiscoveryExtension(pref.value)
       }
     })
   })
