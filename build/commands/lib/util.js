@@ -28,7 +28,7 @@ const mergeWithDefault = (options) => {
   return Object.assign({}, config.defaultOptions, options)
 }
 
-const vendorWebDiscoveryExtension = () => {
+const downloadWebDiscoveryExtension = () => {
   const projectName = 'web-discovery-project'
   const webDiscoveryGitUrl = 'git@github.com:brave/humanweb.git'
   const packageJson = path.join(config.braveCoreDir, 'package.json')
@@ -766,8 +766,8 @@ const util = {
     return applyPatches()
   },
 
-  vendorWebDiscoveryExtension: () => {
-    vendorWebDiscoveryExtension()
+  downloadWebDiscoveryExtension: () => {
+    downloadWebDiscoveryExtension()
   },
 
   buildArgsToString: (buildArgs) => {

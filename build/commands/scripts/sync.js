@@ -98,7 +98,7 @@ async function RunCommand () {
     Log.progress(`...brave core is now at commit ID ${braveCoreSha}`)
   }
 
-  util.vendorWebDiscoveryExtension()
+  util.downloadWebDiscoveryExtension()
 
   Log.progress('Running gclient sync...')
   const result = util.gclientSync(program.init || program.force, program.init, braveCoreRef)

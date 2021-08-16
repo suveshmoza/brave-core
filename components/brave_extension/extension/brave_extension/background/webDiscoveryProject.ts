@@ -7,28 +7,47 @@ import { App } from '../web-discovery-project/build'
 
 if (App !== undefined) {
   const APP = new App({
-    version: chrome.runtime.getManifest().version,
-  });
+    version: chrome.runtime.getManifest().version
+  })
 
-  APP.start().then(() => {
-    const toggleWebDiscoveryExtension = (enabled: boolean) => {
-      APP.prefs.set('modules.web-discovery-project.enabled', enabled)
-      APP.prefs.set('modules.hpnv2.enabled', enabled);
+  const WEB_DISCOVERY_PREF_KEY = 'brave.web_discovery_enabled'
+
+  const toggleWebDiscovery = (pref: chrome.settingsPrivate.PrefObject) => {
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
+      const enable = pref.value
+      if (enable) {
+        // enable
+        APP.start()
+          .then(
+            () => {
+              APP.prefs.set('modules.web-discovery-project.enabled', true)
+              APP.prefs.set('modules.hpnv2.enabled', true)
+            },
+            (err) => {
+              console.error('[web-discovery]', err)
+            }
+          )
+      } else {
+        // disable
+        if (APP.isRunning) {
+          // If app is not running, prefs may not be initialized, so we guard
+          // against that error.
+          APP.prefs.set('modules.web-discovery-project.enabled', false)
+          APP.prefs.set('modules.hpnv2.enabled', false)
+          APP.stop()
+        }
+      }
     }
+  }
 
-    const WEB_DISCOVERY_PREF_KEY = 'brave.web_discovery_enabled'
+  chrome.settingsPrivate.onPrefsChanged.addListener((prefs: chrome.settingsPrivate.PrefObject[]) => {
+    const pref = prefs.find(p => p.key === WEB_DISCOVERY_PREF_KEY)
+    if (pref) {
+      toggleWebDiscovery(pref)
+    }
+  })
 
-    chrome.settingsPrivate.onPrefsChanged.addListener((prefs) => {
-      const pref = prefs.find(p => p.key === WEB_DISCOVERY_PREF_KEY)
-      if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
-        toggleWebDiscoveryExtension(pref.value)
-      }
-    })
-
-    chrome.settingsPrivate.getPref(WEB_DISCOVERY_PREF_KEY, (pref) => {
-      if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
-        toggleWebDiscoveryExtension(pref.value)
-      }
-    })
+  chrome.settingsPrivate.getPref(WEB_DISCOVERY_PREF_KEY, (pref: chrome.settingsPrivate.PrefObject) => {
+    toggleWebDiscovery(pref)
   })
 }
