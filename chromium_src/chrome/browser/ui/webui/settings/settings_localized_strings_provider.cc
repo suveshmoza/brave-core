@@ -108,6 +108,9 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
     {"appearanceSettingsSidebarDisabledDesc",
      IDS_SETTINGS_APPEARANCE_SETTINGS_SIDEBAR_DISABLED_DESC},
 #endif
+    // Search settings
+    {"braveWebDiscoveryLabel", IDS_SETTINGS_WEB_DISCOVERY_LABEL},
+    {"braveWebDiscoverySubLabel", IDS_SETTINGS_WEB_DISCOVERY_SUBLABEL},
     {"mruCyclingSettingLabel", IDS_SETTINGS_BRAVE_MRU_CYCLING_LABEL},
     {"speedreaderSettingLabel", IDS_SETTINGS_SPEEDREADER_LABEL},
     {"speedreaderSettingSubLabel", IDS_SETTINGS_SPEEDREADER_SUB_LABEL},
@@ -317,6 +320,7 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
   html_source->AddString("webRTCLearnMoreURL", kWebRTCLearnMoreURL);
   html_source->AddString("googleLoginLearnMoreURL", kGoogleLoginLearnMoreURL);
   html_source->AddString("ipfsDNSLinkLearnMoreURL", kDNSLinkLearnMoreURL);
+  html_source->AddString("webDiscoveryLearnMoreURL", kWebDiscoveryLearnMoreUrl);
   html_source->AddString("speedreaderLearnMoreURL", kSpeedreaderLearnMoreUrl);
   html_source->AddString(
       "getMoreExtensionsUrl",
