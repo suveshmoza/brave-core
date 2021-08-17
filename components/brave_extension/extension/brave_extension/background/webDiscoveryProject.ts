@@ -19,21 +19,12 @@ if (App !== undefined) {
         // enable
         APP.start()
           .then(
-            () => {
-              APP.prefs.set('modules.web-discovery-project.enabled', true)
-              APP.prefs.set('modules.hpnv2.enabled', true)
-            },
-            (err) => {
-              console.error('[web-discovery]', err)
-            }
+            () => { /* Deliberately left blank */ },
+            (err) => { console.error('[web-discovery]', err) }
           )
       } else {
         // disable
         if (APP.isRunning) {
-          // If app is not running, prefs may not be initialized, so we guard
-          // against that error.
-          APP.prefs.set('modules.web-discovery-project.enabled', false)
-          APP.prefs.set('modules.hpnv2.enabled', false)
           APP.stop()
         }
       }
