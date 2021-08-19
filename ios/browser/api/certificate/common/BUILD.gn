@@ -9,17 +9,12 @@ import("//ios/build/config.gni")
 source_set("common") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  sources = [
-    "common_operations.h",
-    "common_operations.mm",
-    "conversions.h",
-  ]
+  sources = [ "brave_certificate_enums.h" ]
 
-  deps = [
-    "//base",
-    "//net",
-    "//url",
-  ]
+  deps = [ "//third_party/boringssl" ]
 
-  frameworks = [ "Foundation.framework" ]
+  frameworks = [
+    "Foundation.framework",
+    "Security.framework",
+  ]
 }

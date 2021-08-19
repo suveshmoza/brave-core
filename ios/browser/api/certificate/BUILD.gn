@@ -6,20 +6,27 @@
 import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
 
-source_set("common") {
+source_set("certificate") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
-    "common_operations.h",
-    "common_operations.mm",
-    "conversions.h",
+    "brave_certificate.h",
+    "brave_certificate.mm",
   ]
 
   deps = [
+    "common",
+    "models",
     "//base",
     "//net",
-    "//url",
+    "//third_party/abseil-cpp:absl",
+    "//third_party/boringssl",
   ]
 
-  frameworks = [ "Foundation.framework" ]
+  include_dirs = [ "common" ]
+
+  frameworks = [
+    "Foundation.framework",
+    "Security.framework",
+  ]
 }
