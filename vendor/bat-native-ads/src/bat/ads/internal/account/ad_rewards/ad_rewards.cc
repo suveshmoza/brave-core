@@ -229,7 +229,7 @@ void AdRewards::GetPayments() {
 
   PaymentsUrlRequestBuilder url_request_builder(wallet_);
   mojom::UrlRequestPtr url_request = url_request_builder.Build();
-  BLOG(5, UrlRequestToString(url_request));
+  BLOG(6, UrlRequestToString(url_request));
   BLOG(7, UrlRequestHeadersToString(url_request));
 
   auto callback =

@@ -85,7 +85,7 @@ void RedeemUnblindedPaymentTokens::Redeem() {
     return;
   }
 
-  BLOG(2, "PUT /v1/confirmation/payment/{payment_id}");
+  BLOG(2, "PUT /v2/confirmation/payment/{payment_id}");
 
   is_processing_ = true;
 
@@ -95,7 +95,7 @@ void RedeemUnblindedPaymentTokens::Redeem() {
   RedeemUnblindedPaymentTokensUrlRequestBuilder url_request_builder(
       wallet_, unblinded_tokens);
   mojom::UrlRequestPtr url_request = url_request_builder.Build();
-  BLOG(5, UrlRequestToString(url_request));
+  BLOG(6, UrlRequestToString(url_request));
   BLOG(7, UrlRequestHeadersToString(url_request));
 
   auto callback = std::bind(&RedeemUnblindedPaymentTokens::OnRedeem, this,
