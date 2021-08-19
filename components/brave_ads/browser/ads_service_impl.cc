@@ -2193,6 +2193,10 @@ std::string AdsServiceImpl::LoadResourceForId(const std::string& id) {
   return LoadDataResourceAndDecompressIfNeeded(resource_id);
 }
 
+void AdsServiceImpl::ClearScheduledCaptcha() {
+  rewards_service_->ClearScheduledCaptcha();
+}
+
 void AdsServiceImpl::GetScheduledCaptcha(
     const std::string& payment_id,
     ads::GetScheduledCaptchaCallback callback) {
