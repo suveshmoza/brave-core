@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveRewardsHelper;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
@@ -132,6 +133,7 @@ public class P3aOnboardingActivity extends FirstRunActivityBase {
                         try {
                             BravePrefServiceBridge.getInstance().setP3AEnabled(isChecked);
                             BravePrefServiceBridge.getInstance().setP3ANoticeAcknowledged(true);
+                            UmaSessionStats.changeMetricsReportingConsent(isChecked);
                         } catch (Exception e) {
                             Log.e("P3aOnboarding", e.getMessage());
                         }
@@ -175,6 +177,7 @@ public class P3aOnboardingActivity extends FirstRunActivityBase {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
         FirstRunUtils.setEulaAccepted();
+        UmaSessionStats.changeMetricsReportingConsent(mP3aOnboardingCheckbox.isChecked());
         completeOnboardingExperience();
     }
 }
