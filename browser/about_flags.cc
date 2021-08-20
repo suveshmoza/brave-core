@@ -168,6 +168,12 @@ constexpr char kBraveEphemeralStorageKeepAliveDescription[] =
     "Keep ephemeral storage partitions alive for a specified time after all "
     "tabs for that origin are closed";
 
+constexpr char kBraveFirstPartyEphemeralStorageName[] =
+    "First Party Ephemeral Storage";
+constexpr char kBraveFirstPartyEphemeralStorageDescription[] =
+    "Enable support for first party ephemeral storage using SESSION ONLY "
+    "cookie setting";
+
 #if BUILDFLAG(ENABLE_GEMINI_WALLET)
 constexpr char kBraveRewardsGeminiName[] = "Enable Gemini for Brave Rewards";
 constexpr char kBraveRewardsGeminiDescription[] =
@@ -298,6 +304,7 @@ constexpr char kUseDevUpdaterUrlDescription[] =
 #define BRAVE_DECENTRALIZED_DNS_FEATURE_ENTRIES
 #endif
 
+
 #define BRAVE_ABOUT_FLAGS_FEATURE_ENTRIES                                   \
     {"use-dev-updater-url",                                                 \
      flag_descriptions::kUseDevUpdaterUrlName,                              \
@@ -361,6 +368,10 @@ constexpr char kUseDevUpdaterUrlDescription[] =
      flag_descriptions::kBraveEphemeralStorageKeepAliveName,                \
      flag_descriptions::kBraveEphemeralStorageKeepAliveDescription, kOsAll, \
      FEATURE_VALUE_TYPE(net::features::kBraveEphemeralStorageKeepAlive)},   \
+    {"brave-first-party-ephemeral-storage",                                 \
+     flag_descriptions::kBraveFirstPartyEphemeralStorageName,               \
+     flag_descriptions::kBraveFirstPartyEphemeralStorageDescription, kOsAll,\
+     FEATURE_VALUE_TYPE(net::features::kBraveFirstPartyEphemeralStorage)},  \
     {"brave-rewards-verbose-logging",                                       \
      flag_descriptions::kBraveRewardsVerboseLoggingName,                    \
      flag_descriptions::kBraveRewardsVerboseLoggingDescription,             \
