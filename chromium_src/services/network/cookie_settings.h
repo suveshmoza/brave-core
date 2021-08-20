@@ -15,6 +15,7 @@
       const GURL& url, const GURL& site_for_cookies,              \
       const absl::optional<url::Origin>& top_frame_origin,        \
       net::SamePartyContext::Type same_party_context_type) const; \
+  bool AreShieldsDisabled(const GURL& url) const override; \
   bool IsCookieAccessible
 
 #define AnnotateAndMoveUserBlockedCookies                   \

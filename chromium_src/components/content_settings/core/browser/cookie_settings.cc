@@ -83,6 +83,18 @@ std::vector<url::Origin> CookieSettings::TakeEphemeralStorageOpaqueOrigins(
   return result;
 }
 
-}  // namespace content_settings
+bool CookieSettings::AreShieldsDisabled(const GURL& url) const {
+  SettingInfo info;
+  std::unique_ptr<base::Value> value =
+      host_content_settings_map_->GetWebsiteSetting(
+          url, url, ContentSettingsType::COOKIES, &info);
+  if (!value) {
+    return false;
+  }
 
-#undef BRAVE_COOKIE_SETTINGS_GET_COOKIES_SETTINGS_INTERNAL
+  return info.primary_pattern.MatchesAllHosts() &&
+         !info.secondary_pattern.MatchesAllHosts() &&
+         info.secondary_pattern.Matches(url);
+}
+
+}  // namespace content_settings

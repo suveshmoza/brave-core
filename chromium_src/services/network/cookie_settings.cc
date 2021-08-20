@@ -75,4 +75,15 @@ bool CookieSettings::AnnotateAndMoveUserBlockedEphemeralCookies(
       excluded_cookies);
 }
 
+bool CookieSettings::AreShieldsDisabled(const GURL& url) const {
+  const auto& entry = base::ranges::find_if(
+      content_settings_, [&](const ContentSettingPatternSource& entry) {
+        return entry.primary_pattern.MatchesAllHosts() &&
+               !entry.secondary_pattern.MatchesAllHosts() &&
+               entry.secondary_pattern.Matches(url);
+      });
+  return entry != content_settings_.end() &&
+         entry->GetContentSetting() == CONTENT_SETTING_ALLOW;
+}
+
 }  // namespace network
