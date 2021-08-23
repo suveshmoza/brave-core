@@ -5,14 +5,14 @@ python2_action("generate_breakpad_symbols") {
   symbols_dir = "$brave_dist_dir/$brave_product_name.breakpad.syms"
   outputs = [ symbols_dir ]
 
-  apk_or_aab = rebase_path(brave_android_output)
+  package_path = rebase_path(brave_android_output)
 
   script = "//brave/tools/android/generate_breakpad_symbols.py"
   args = [
     "--symbols-dir=" + rebase_path(symbols_dir),
     "--jobs=16",
     "--build-dir=" + rebase_path(root_out_dir),
-    "--apk-or-aab=" + apk_or_aab,
+    "--package-path=" + package_path,
     "--src-root=" + rebase_path("//"),
     "--clear",
     "--verbose",

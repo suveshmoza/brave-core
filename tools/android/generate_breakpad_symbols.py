@@ -92,8 +92,8 @@ def main():
                     help='The build output directory.')
     parser.add_option('', '--symbols-dir', default='',
                     help='The directory where to write the symbols file.')
-    parser.add_option('', '--apk-or-aab', default='',
-                    help='The path of the apk or aab to generate symbols for libs from it.')
+    parser.add_option('', '--package-path', default='',
+                    help='The path of the apk or aab package to generate symbols for libs from it.')
     parser.add_option('', '--clear', default=False, action='store_true',
                     help='Clear the symbols directory before writing new '
                          'symbols.')
@@ -114,8 +114,8 @@ def main():
         print "Required option --build-dir missing."
         return 1
 
-    if not options.apk_or_aab:
-        print "Required option --apk-or-aab missing."
+    if not options.package_path:
+        print "Required option --package-path missing."
         return 1
 
     if not options.src_root:
@@ -126,13 +126,13 @@ def main():
     if not GetDumpSymsBinary(options.build_dir):
         return 1
 
-    file_name, extension = os.path.splitext(options.apk_or_aab)
+    file_name, extension = os.path.splitext(options.package_path)
 
     if extension != '.apk' and extension != '.aab':
         print('Input file is not apk or aab');
         return 1
 
-    with zipfile.ZipFile(options.apk_or_aab, 'r') as zf:
+    with zipfile.ZipFile(options.package_path, 'r') as zf:
         names = zf.namelist()
 
     libs = []
