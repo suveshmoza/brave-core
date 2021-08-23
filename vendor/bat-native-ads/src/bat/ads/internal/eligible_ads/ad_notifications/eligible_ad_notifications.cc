@@ -5,7 +5,6 @@
 
 #include "bat/ads/internal/eligible_ads/ad_notifications/eligible_ad_notifications.h"
 
-#include <string>
 #include <vector>
 
 #include "bat/ads/ad_notification_info.h"
@@ -19,6 +18,9 @@
 #include "bat/ads/internal/client/client.h"
 #include "bat/ads/internal/database/tables/ad_events_database_table.h"
 #include "bat/ads/internal/database/tables/creative_ad_notifications_database_table.h"
+#include "bat/ads/internal/eligible_ads/eligible_ads_predictor_util.h"
+#include "bat/ads/internal/eligible_ads/eligible_ads_util.h"
+#include "bat/ads/internal/eligible_ads/sample_ads.h"
 #include "bat/ads/internal/eligible_ads/seen_ads.h"
 #include "bat/ads/internal/eligible_ads/seen_advertisers.h"
 #include "bat/ads/internal/features/ad_serving/ad_serving_features.h"
@@ -52,7 +54,7 @@ void EligibleAds::SetLastServedAd(const CreativeAdInfo& creative_ad) {
 }
 
 void EligibleAds::GetForSegments(const SegmentList& segments,
-                                 GetEligibleAdsCallback callback) {
+                                 GetForSegmentsCallback callback) {
   database::table::AdEvents database_table;
   database_table.GetAll([=](const bool success, const AdEventList& ad_events) {
     if (!success) {
@@ -75,13 +77,93 @@ void EligibleAds::GetForSegments(const SegmentList& segments,
   });
 }
 
+void EligibleAds::GetForFeatures(const SegmentList& interest_segments,
+                                 const SegmentList& intent_segments,
+                                 GetForFeaturesCallback callback) {
+  database::table::AdEvents database_table;
+  database_table.GetAll([=](const bool success, const AdEventList& ad_events) {
+    if (!success) {
+      BLOG(1, "Failed to get ad events");
+      callback(/* was_allowed */ false, absl::nullopt);
+      return;
+    }
+
+    const int max_count = features::GetBrowsingHistoryMaxCount();
+    const int days_ago = features::GetBrowsingHistoryDaysAgo();
+    AdsClientHelper::Get()->GetBrowsingHistory(
+        max_count, days_ago, [=](const BrowsingHistoryList& history) {
+          GetEligibleAds(interest_segments, intent_segments, ad_events, history,
+                         callback);
+        });
+  });
+}
+
 ///////////////////////////////////////////////////////////////////////////////
+
+void EligibleAds::GetEligibleAds(const SegmentList& interest_segments,
+                                 const SegmentList& intent_segments,
+                                 const AdEventList& ad_events,
+                                 const BrowsingHistoryList& browsing_history,
+                                 GetForFeaturesCallback callback) const {
+  BLOG(1, "Get eligible ads");
+
+  database::table::CreativeAdNotifications database_table;
+  database_table.GetAll([=](const bool success, const SegmentList& segments,
+                            const CreativeAdNotificationList& ads) {
+    if (!success) {
+      BLOG(1, "Failed to get ads");
+      callback(/* was_allowed */ false, absl::nullopt);
+      return;
+    }
+
+    if (ads.empty()) {
+      BLOG(1, "No ads");
+      callback(/* was_allowed */ true, absl::nullopt);
+      return;
+    }
+
+    CreativeAdNotificationList eligible_ads = ApplyFrequencyCapping(
+        ads,
+        ShouldCapLastServedAd(ads) ? last_served_creative_ad_
+                                   : CreativeAdInfo(),
+        ad_events, browsing_history);
+
+    if (eligible_ads.empty()) {
+      BLOG(1, "No eligible ads");
+      callback(/* was_allowed */ true, absl::nullopt);
+      return;
+    }
+
+    ChooseAd(eligible_ads, ad_events, interest_segments, intent_segments,
+             callback);
+  });
+}
+
+void EligibleAds::ChooseAd(const CreativeAdNotificationList& eligible_ads,
+                           const AdEventList& ad_events,
+                           const SegmentList& interest_segments,
+                           const SegmentList& intent_segments,
+                           GetForFeaturesCallback callback) const {
+  DCHECK(!eligible_ads.empty());
+
+  const CreativeAdNotificationPredictorMap ads =
+      GroupEligibleAdsByCreativeInstanceId(eligible_ads);
+
+  const CreativeAdNotificationPredictorMap ads_with_features_and_scores =
+      ComputePredictorFeaturesAndScores(ads, ad_events, interest_segments,
+                                        intent_segments);
+
+  const absl::optional<CreativeAdNotificationInfo> ad =
+      SampleFromAds(ads_with_features_and_scores);
+
+  callback(/* was_allowed */ true, ad);
+}
 
 void EligibleAds::GetForParentChildSegments(
     const SegmentList& segments,
     const AdEventList& ad_events,
     const BrowsingHistoryList& browsing_history,
-    GetEligibleAdsCallback callback) const {
+    GetForSegmentsCallback callback) const {
   DCHECK(!segments.empty());
 
   BLOG(1, "Get eligible ads for parent-child segments:");
@@ -110,7 +192,7 @@ void EligibleAds::GetForParentSegments(
     const SegmentList& segments,
     const AdEventList& ad_events,
     const BrowsingHistoryList& browsing_history,
-    GetEligibleAdsCallback callback) const {
+    GetForSegmentsCallback callback) const {
   DCHECK(!segments.empty());
 
   const SegmentList parent_segments = GetParentSegments(segments);
@@ -143,7 +225,7 @@ void EligibleAds::GetForParentSegments(
 
 void EligibleAds::GetForUntargeted(const AdEventList& ad_events,
                                    const BrowsingHistoryList& browsing_history,
-                                   GetEligibleAdsCallback callback) const {
+                                   GetForSegmentsCallback callback) const {
   BLOG(1, "Get eligble ads for untargeted segment");
 
   const std::vector<std::string> segments = {ad_targeting::kUntargeted};

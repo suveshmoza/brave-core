@@ -297,4 +297,91 @@ TEST_F(BatAdsEligibleInlineContentAdsTest, GetAdsForUnmatchedDimensions) {
   // Assert
 }
 
+TEST_F(BatAdsEligibleInlineContentAdsTest, GetForFeaturesWithoutAds) {
+  // Arrange
+  const SegmentList intent_segments = {"intent-foo", "intent-bar"};
+  const SegmentList interest_segments = {"interest-foo", "interest-bar"};
+
+  // Act
+  ad_targeting::geographic::SubdivisionTargeting subdivision_targeting;
+  resource::AntiTargeting anti_targeting_resource;
+  inline_content_ads::EligibleAds eligible_ads(&subdivision_targeting,
+                                               &anti_targeting_resource);
+
+  eligible_ads.GetForFeatures(
+      intent_segments, interest_segments, "200x100",
+      [=](const bool was_allowed,
+          absl::optional<CreativeInlineContentAdInfo> ad) {
+        EXPECT_EQ(absl::nullopt, ad);
+      });
+
+  // Assert
+}
+
+TEST_F(BatAdsEligibleInlineContentAdsTest, GetForFeaturesWithEmptySegments) {
+  // Arrange
+  CreativeInlineContentAdList creative_inline_content_ads;
+
+  const CreativeInlineContentAdInfo creative_inline_content_ad_1 =
+      GetCreativeInlineContentAdForSegment("foo");
+  creative_inline_content_ads.push_back(creative_inline_content_ad_1);
+
+  const CreativeInlineContentAdInfo creative_inline_content_ad_2 =
+      GetCreativeInlineContentAdForSegment("foo-bar");
+  creative_inline_content_ads.push_back(creative_inline_content_ad_2);
+
+  Save(creative_inline_content_ads);
+
+  const SegmentList intent_segments = {};
+  const SegmentList interest_segments = {};
+
+  // Act
+  ad_targeting::geographic::SubdivisionTargeting subdivision_targeting;
+  resource::AntiTargeting anti_targeting_resource;
+  inline_content_ads::EligibleAds eligible_ads(&subdivision_targeting,
+                                               &anti_targeting_resource);
+
+  const CreativeInlineContentAdInfo expected_ad = creative_inline_content_ad_2;
+
+  eligible_ads.GetForFeatures(
+      intent_segments, interest_segments, "200x100",
+      [=](const bool was_allowed,
+          absl::optional<CreativeInlineContentAdInfo> ad) { EXPECT_TRUE(ad); });
+
+  // Assert
+}
+
+TEST_F(BatAdsEligibleInlineContentAdsTest, GetForFeatures) {
+  // Arrange
+  CreativeInlineContentAdList creative_inline_content_ads;
+
+  const CreativeInlineContentAdInfo creative_inline_content_ad_1 =
+      GetCreativeInlineContentAdForSegment("foo-bar1");
+  creative_inline_content_ads.push_back(creative_inline_content_ad_1);
+
+  const CreativeInlineContentAdInfo creative_inline_content_ad_2 =
+      GetCreativeInlineContentAdForSegment("foo-bar3");
+  creative_inline_content_ads.push_back(creative_inline_content_ad_2);
+
+  Save(creative_inline_content_ads);
+
+  const SegmentList intent_segments = {"foo-bar1", "foo-bar2"};
+  const SegmentList interest_segments = {"foo-bar3"};
+
+  // Act
+  ad_targeting::geographic::SubdivisionTargeting subdivision_targeting;
+  resource::AntiTargeting anti_targeting_resource;
+  inline_content_ads::EligibleAds eligible_ads(&subdivision_targeting,
+                                               &anti_targeting_resource);
+
+  const CreativeInlineContentAdInfo expected_ad = creative_inline_content_ad_2;
+
+  eligible_ads.GetForFeatures(
+      intent_segments, interest_segments, "200x100",
+      [=](const bool was_allowed,
+          absl::optional<CreativeInlineContentAdInfo> ad) { EXPECT_TRUE(ad); });
+
+  // Assert
+}
+
 }  // namespace ads
