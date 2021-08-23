@@ -1024,6 +1024,7 @@ int AdsServiceImpl::GetIdleTimeThreshold() {
   return GetIntegerPref(ads::prefs::kIdleTimeThreshold);
 }
 
+#if BUILDFLAG(BRAVE_ADAPTIVE_CAPTCHA_ENABLED)
 void AdsServiceImpl::ShowScheduledCaptcha(const std::string& payment_id,
                                           const std::string& captcha_id) {
   rewards_service_->ShowScheduledCaptcha(payment_id, captcha_id);
@@ -1032,6 +1033,7 @@ void AdsServiceImpl::ShowScheduledCaptcha(const std::string& payment_id,
 void AdsServiceImpl::SnoozeScheduledCaptcha() {
   rewards_service_->SnoozeScheduledCaptcha();
 }
+#endif
 
 void AdsServiceImpl::OnShowAdNotification(const std::string& notification_id) {
   if (!connected()) {
@@ -2195,7 +2197,9 @@ std::string AdsServiceImpl::LoadResourceForId(const std::string& id) {
 }
 
 void AdsServiceImpl::ClearScheduledCaptcha() {
+#if BUILDFLAG(BRAVE_ADAPTIVE_CAPTCHA_ENABLED)
   rewards_service_->ClearScheduledCaptcha();
+#endif
 }
 
 void AdsServiceImpl::GetScheduledCaptcha(
@@ -2208,22 +2212,24 @@ void AdsServiceImpl::GetScheduledCaptcha(
 #endif
 }
 
+#if BUILDFLAG(BRAVE_ADAPTIVE_CAPTCHA_ENABLED)
 void AdsServiceImpl::OnGetScheduledCaptcha(
     ads::GetScheduledCaptchaCallback callback,
     const std::string& captcha_id) {
   callback(captcha_id);
 }
+#endif
 
 void AdsServiceImpl::ShowScheduledCaptchaNotification(
     const std::string& payment_id,
     const std::string& captcha_id) {
+#if BUILDFLAG(BRAVE_ADAPTIVE_CAPTCHA_ENABLED)
   PrefService* pref_service = profile_->GetPrefs();
   if (pref_service->GetBoolean(brave_rewards::prefs::kScheduledCaptchaPaused)) {
     VLOG(0) << "Ads paused; support intervention required";
     return;
   }
 
-#if BUILDFLAG(BRAVE_ADAPTIVE_CAPTCHA_ENABLED)
   const int snooze_count = pref_service->GetInteger(
       brave_rewards::prefs::kScheduledCaptchaSnoozeCount);
 
