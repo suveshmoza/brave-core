@@ -11,13 +11,13 @@
 #include <unordered_map>
 
 #include "brave/components/brave_wallet/browser/brave_wallet_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
 class WebContents;
-
 }  // namespace content
 
 namespace brave_wallet {
@@ -25,7 +25,8 @@ namespace brave_wallet {
 class WalletBubbleManagerDelegate;
 
 class BraveWalletTabHelper
-    : public content::WebContentsUserData<BraveWalletTabHelper> {
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<BraveWalletTabHelper> {
  public:
   explicit BraveWalletTabHelper(content::WebContents* web_contents);
   ~BraveWalletTabHelper() override;
@@ -39,6 +40,9 @@ class BraveWalletTabHelper
   void CloseBubble();
   bool IsShowingBubble();
   bool IsBubbleClosedForTesting();
+
+  // content::WebContentsObserver
+  void WebContentsDestroyed() override;
 #endif
 
  private:

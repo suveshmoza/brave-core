@@ -46,6 +46,8 @@ class BraveWalletProviderImpl final
                                     const std::vector<std::string>& accounts);
   void GetChainId(GetChainIdCallback callback) override;
   void GetAllowedAccounts(GetAllowedAccountsCallback callback) override;
+  void AddEthereumChain(std::vector<mojom::EthereumChainPtr> chains,
+                        RequestCallback callback) override;
   void OnGetAllowedAccounts(GetAllowedAccountsCallback callback,
                             bool success,
                             const std::vector<std::string>& accounts);
@@ -55,9 +57,8 @@ class BraveWalletProviderImpl final
   void ChainChangedEvent(const std::string& chain_id) override;
 
  private:
-  bool OnAddEthereumChainRequest(const std::string& json_payload,
-                                 RequestCallback callback);
-  void OnChainAddedResult(RequestCallback callback, const std::string& result);
+  void OnChainAddedResult(AddEthereumChainCallback callback,
+                          const std::string& result);
   void OnConnectionError();
 
   std::unique_ptr<BraveWalletProviderDelegate> delegate_;
