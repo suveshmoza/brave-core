@@ -289,8 +289,8 @@ function Container (props: Props) {
       networkPayload: networkPayload
     })
   }
-  const onNetworkLearnMore = () => {
-    chrome.tabs.create({ url: 'https://support.brave.com/' })
+  const onNetworkLearnMore = async () => {
+    chrome.tabs.create({ url: 'https://support.brave.com/' }).catch((e) => { console.error(e) })
   }
 
   const onRejectTransaction = () => {
